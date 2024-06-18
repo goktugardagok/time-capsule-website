@@ -1,45 +1,30 @@
-const { Storage } = require('@google-cloud/storage');
 const path = require('path');
-const dotenv = require('dotenv');
-
-dotenv.config();
+const { Storage } = require('@google-cloud/storage');
 
 const storage = new Storage({
-  projectId: process.env.GCP_PROJECT_ID,
-  keyFilename: path.join(__dirname, '..', 'config', process.env.GCS_KEY_FILE),
+  keyFilename: path.join(__dirname, '../config/service-account-key.json'),
 });
 
-const bucket = storage.bucket(process.env.GCS_BUCKET_NAME);
+const bucket = storage.bucket('time-capsule-bucket');
 
-if (!process.env.GCS_BUCKET_NAME) {
-  throw new Error('A bucket name is needed to use Cloud Storage.');
-}
+const uploadFile = async (file) => {
+  const { originalname, buffer } = file;
+  const blob = bucket.file(Date.now() + '-' + originalname);
+  const blobStream = blob.createWriteStream({
+    resumable: false,
+  });
 
-exports.saveFileToCloudStorage = async (file) => {
-  try {
-    if (!bucket) {
-      throw new Error('Bucket is not initialized.');
-    }
+  blobStream.on('error', (err) => {
+    console.log(err);
+  });
 
-    const blob = bucket.file(Date.now() + '-' + file.originalname);
-    const blobStream = blob.createWriteStream({
-      resumable: false,
-    });
+  blobStream.on('finish', () => {
+    console.log('File uploaded successfully.');
+  });
 
-    blobStream.on('error', (err) => {
-      console.error('Blob stream error:', err);
-      throw new Error('Unable to upload file.');
-    });
+  blobStream.end(buffer);
+};
 
-    blobStream.on('finish', () => {
-      console.log('File uploaded successfully');
-    });
-
-    blobStream.end(file.buffer);
-
-    return `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
-  } catch (error) {
-    console.error('Error in saveFileToCloudStorage:', error);
-    throw error;
-  }
+module.exports = {
+  uploadFile,
 };
