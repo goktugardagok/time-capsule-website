@@ -1,5 +1,5 @@
 const TimeCapsule = require('../models/timeCapsuleModel');
-const { upload, deleteFile } = require('../utils/fileStorage');
+const upload = require('../utils/fileStorage');
 
 exports.createTimeCapsule = async (req, res) => {
   try {
@@ -10,7 +10,7 @@ exports.createTimeCapsule = async (req, res) => {
       userId,
       text,
       openDate,
-      imageUrl: file ? `https://storage.googleapis.com/${process.env.GCS_BUCKET_NAME}/${file.filename}` : null
+      imageUrl: file ? `https://storage.googleapis.com/${process.env.GCS_BUCKET_NAME}/${file.originalname}` : null,
     });
 
     await newCapsule.save();
