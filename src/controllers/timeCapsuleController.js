@@ -1,39 +1,30 @@
-const TimeCapsule = require('../models/TimeCapsule'); // Ensure this path is correct
-const path = require('path');
-const fs = require('fs');
-const { uploadFile } = require('../utils/fileStorage'); // Assuming you have a fileStorage utility
+const TimeCapsule = require('../models/timeCapsuleModel');
+const { upload, deleteFile } = require('../utils/fileStorage');
 
-// Controller to get all time capsules
-exports.getAllTimeCapsules = async (req, res) => {
-  try {
-    const timeCapsules = await TimeCapsule.find();
-    res.status(200).json(timeCapsules);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// Controller to create a new time capsule
 exports.createTimeCapsule = async (req, res) => {
   try {
     const { userId, text, openDate } = req.body;
-    let imageUrl = '';
+    const file = req.file;
 
-    if (req.file) {
-      const result = await uploadFile(req.file); // Ensure your uploadFile function handles the file upload correctly
-      imageUrl = result.Location;
-    }
-
-    const newTimeCapsule = new TimeCapsule({
+    const newCapsule = new TimeCapsule({
       userId,
       text,
       openDate,
-      imageUrl
+      imageUrl: file ? `https://storage.googleapis.com/${process.env.GCS_BUCKET_NAME}/${file.filename}` : null
     });
 
-    await newTimeCapsule.save();
-    res.status(201).json(newTimeCapsule);
+    await newCapsule.save();
+    res.status(201).json(newCapsule);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: 'Failed to create time capsule', error });
+  }
+};
+
+exports.getAllTimeCapsules = async (req, res) => {
+  try {
+    const capsules = await TimeCapsule.find();
+    res.status(200).json(capsules);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch time capsules', error });
   }
 };

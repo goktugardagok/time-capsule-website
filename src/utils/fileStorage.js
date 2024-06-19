@@ -1,43 +1,32 @@
-const aws = require('aws-sdk');
+const { Storage } = require('@google-cloud/storage');
+const path = require('path');
 const multer = require('multer');
-const multerS3 = require('multer-s3');
+const MulterGoogleCloudStorage = require('multer-google-storage').storageEngine;
 
-const s3 = new aws.S3({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION,
+const storage = new Storage({
+  projectId: process.env.GCP_PROJECT_ID,
+  keyFilename: path.join(__dirname, '..', process.env.GCS_KEY_FILE)
 });
 
+const bucket = storage.bucket(process.env.GCS_BUCKET_NAME);
+
 const upload = multer({
-  storage: multerS3({
-    s3,
-    bucket: process.env.AWS_BUCKET_NAME,
-    acl: 'public-read',
-    key: function (req, file, cb) {
-      cb(null, `${Date.now().toString()}-${file.originalname}`);
+  storage: MulterGoogleCloudStorage({
+    bucket: process.env.GCS_BUCKET_NAME,
+    projectId: process.env.GCP_PROJECT_ID,
+    keyFilename: path.join(__dirname, '..', process.env.GCS_KEY_FILE),
+    destination: (req, file, cb) => {
+      cb(null, `${Date.now()}_${file.originalname}`);
     }
   })
 });
 
-const uploadFile = (file) => {
-  return new Promise((resolve, reject) => {
-    const params = {
-      Bucket: process.env.AWS_BUCKET_NAME,
-      Key: file.originalname,
-      Body: file.buffer,
-      ContentType: file.mimetype,
-    };
-
-    s3.upload(params, (error, data) => {
-      if (error) {
-        reject(error);
-      }
-      resolve(data);
-    });
-  });
+const deleteFile = async (filename) => {
+  try {
+    await bucket.file(filename).delete();
+  } catch (error) {
+    console.error('Failed to delete file:', error);
+  }
 };
 
-module.exports = {
-  upload,
-  uploadFile,
-};
+module.exports = { upload, deleteFile };
