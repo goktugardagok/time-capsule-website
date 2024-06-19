@@ -1,12 +1,23 @@
 const mongoose = require('mongoose');
 
-const TimeCapsuleSchema = new mongoose.Schema({
-  userId: { type: String, required: true },
-  text: { type: String },
-  imageUrl: { type: String },
-  videoUrl: { type: String },
-  openDate: { type: Date, required: true },
-  createdAt: { type: Date, default: Date.now },
+const timeCapsuleSchema = new mongoose.Schema({
+  userId: {
+    type: String,
+    required: true,
+  },
+  text: {
+    type: String,
+    required: true,
+  },
+  openDate: {
+    type: Date,
+    required: true,
+  },
+  imageUrl: {
+    type: String,
+  },
+}, {
+  timestamps: true,
 });
 
-module.exports = mongoose.model('TimeCapsule', TimeCapsuleSchema);
+module.exports = mongoose.model('TimeCapsule', timeCapsuleSchema);

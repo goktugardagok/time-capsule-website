@@ -1,30 +1,43 @@
-const path = require('path');
-const { Storage } = require('@google-cloud/storage');
+const aws = require('aws-sdk');
+const multer = require('multer');
+const multerS3 = require('multer-s3');
 
-const storage = new Storage({
-  keyFilename: path.join(__dirname, '../config/service-account-key.json'),
+const s3 = new aws.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
 });
 
-const bucket = storage.bucket('time-capsule-bucket');
+const upload = multer({
+  storage: multerS3({
+    s3,
+    bucket: process.env.AWS_BUCKET_NAME,
+    acl: 'public-read',
+    key: function (req, file, cb) {
+      cb(null, `${Date.now().toString()}-${file.originalname}`);
+    }
+  })
+});
 
-const uploadFile = async (file) => {
-  const { originalname, buffer } = file;
-  const blob = bucket.file(Date.now() + '-' + originalname);
-  const blobStream = blob.createWriteStream({
-    resumable: false,
+const uploadFile = (file) => {
+  return new Promise((resolve, reject) => {
+    const params = {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: file.originalname,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+    };
+
+    s3.upload(params, (error, data) => {
+      if (error) {
+        reject(error);
+      }
+      resolve(data);
+    });
   });
-
-  blobStream.on('error', (err) => {
-    console.log(err);
-  });
-
-  blobStream.on('finish', () => {
-    console.log('File uploaded successfully.');
-  });
-
-  blobStream.end(buffer);
 };
 
 module.exports = {
+  upload,
   uploadFile,
 };
