@@ -1,33 +1,33 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+require('dotenv').config();
 const timeCapsuleRoutes = require('./routes/timeCapsuleRoutes');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 
 // Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(cors());
+app.use(bodyParser.json());
 
-// MongoDB Connection
-const mongoUri = process.env.MONGODB_URI;
-mongoose.connect(mongoUri, {
+// MongoDB connection
+mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
-    useUnifiedTopology: true,
-}).then(() => {
-    console.log('MongoDB connected');
-}).catch(err => {
-    console.log('MongoDB connection error:', err);
-});
+    useUnifiedTopology: true
+})
+    .then(() => console.log('MongoDB connected'))
+    .catch(err => console.log(err));
 
 // Routes
+app.use('/api/timecapsules', timeCapsuleRoutes);
+
+// Root route
 app.get('/', (req, res) => {
     res.send('Welcome to the Time Capsule API');
 });
 
-app.use('/api/timecapsules', timeCapsuleRoutes);
-
-// Start Server
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
 });
