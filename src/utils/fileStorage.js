@@ -1,32 +1,23 @@
-const { Storage } = require('@google-cloud/storage');
-const path = require('path');
 const multer = require('multer');
-const MulterGoogleCloudStorage = require('multer-google-storage').storageEngine;
+const { Storage } = require('@google-cloud/storage');
+const multerGoogleStorage = require('multer-google-storage');
 
 const storage = new Storage({
-  projectId: process.env.GCP_PROJECT_ID,
-  keyFilename: path.join(__dirname, '..', process.env.GCS_KEY_FILE)
+  keyFilename: 'path/to/your-service-account-file.json',
+  projectId: 'your-project-id',
 });
 
-const bucket = storage.bucket(process.env.GCS_BUCKET_NAME);
+const bucket = storage.bucket('your-bucket-name');
 
-const upload = multer({
-  storage: MulterGoogleCloudStorage({
-    bucket: process.env.GCS_BUCKET_NAME,
-    projectId: process.env.GCP_PROJECT_ID,
-    keyFilename: path.join(__dirname, '..', process.env.GCS_KEY_FILE),
-    destination: (req, file, cb) => {
-      cb(null, `${Date.now()}_${file.originalname}`);
-    }
-  })
+const uploadHandler = multer({
+  storage: multerGoogleStorage.storageEngine({
+    bucket: 'your-bucket-name',
+    projectId: 'your-project-id',
+    keyFilename: 'path/to/your-service-account-file.json',
+    filename: (req, file, cb) => {
+      cb(null, file.originalname);
+    },
+  }),
 });
 
-const deleteFile = async (filename) => {
-  try {
-    await bucket.file(filename).delete();
-  } catch (error) {
-    console.error('Failed to delete file:', error);
-  }
-};
-
-module.exports = { upload, deleteFile };
+module.exports = uploadHandler;
