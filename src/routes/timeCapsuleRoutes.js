@@ -1,9 +1,12 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
 const timeCapsuleController = require('../controllers/timeCapsuleController');
-const { upload } = require('../utils/fileStorage'); // Assuming you have a fileStorage utility
 
-router.get('/all', timeCapsuleController.getAllTimeCapsules);
+// Configure Multer storage and file filter
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
 router.post('/create', upload.single('file'), timeCapsuleController.createTimeCapsule);
 
 module.exports = router;
