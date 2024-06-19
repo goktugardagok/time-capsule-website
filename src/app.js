@@ -1,9 +1,9 @@
 require('dotenv').config();
-
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
 const bodyParser = require('body-parser');
+
 const timeCapsuleRoutes = require('./routes/timeCapsuleRoutes');
 
 const app = express();
@@ -23,9 +23,11 @@ app.use('/api/timecapsules', timeCapsuleRoutes);
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-})
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
+}).then(() => {
+  console.log('MongoDB connected');
+}).catch((err) => {
+  console.error('MongoDB connection error:', err);
+});
 
 // Start the server
 app.listen(port, () => {
