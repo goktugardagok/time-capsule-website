@@ -1,23 +1,21 @@
 {
   "name": "time-capsule-website",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "echo 'This project does not require a build step'"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.11.2",
     "aws-sdk": "^2.1644.0",
     "body-parser": "^1.20.2",
-    "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "mongoose": "^6.8.0",
+    "mongoose": "^8.4.3",
     "multer": "^1.4.5-lts.1",
-    "multer-google-storage": "^1.0.2",
-    "node-schedule": "^2.1.1"
-  },
-  "author": "",
-  "license": "ISC"
+    "multer-google-storage": "^2.5.0",
+    "node-schedule": "^2.1.1",
+    "cors": "^2.8.5"
+  }
 }

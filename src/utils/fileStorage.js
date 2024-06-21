@@ -1,23 +1,21 @@
-const multer = require('multer');
 const { Storage } = require('@google-cloud/storage');
-const multerGoogleStorage = require('multer-google-storage');
+const multer = require('multer');
+const multerGoogleStorage = require('multer-google-storage').default;
 
 const storage = new Storage({
-  keyFilename: 'C:/Users/goktu/OneDrive/Desktop/time-capsule-website/src/config/service-account-key.json', // Your actual path
-  projectId: 'timecapsulecloud', // Your actual project ID
+  projectId: process.env.GCP_PROJECT_ID,
+  keyFilename: process.env.GCS_KEY_FILE
 });
 
-const bucket = storage.bucket('time-capsule-bucket'); // Your actual bucket name
-
-const uploadHandler = multer({
+const upload = multer({
   storage: multerGoogleStorage.storageEngine({
-    bucket: 'time-capsule-bucket', // Your actual bucket name
-    projectId: 'timecapsulecloud', // Your actual project ID
-    keyFilename: 'C:/Users/goktu/OneDrive/Desktop/time-capsule-website/src/config/service-account-key.json', // Your actual path
+    bucket: process.env.GCS_BUCKET_NAME,
+    projectId: process.env.GCP_PROJECT_ID,
+    keyFilename: process.env.GCS_KEY_FILE,
     filename: (req, file, cb) => {
       cb(null, file.originalname);
-    },
-  }),
+    }
+  })
 });
 
-module.exports = uploadHandler;
+module.exports = upload;
