@@ -1,35 +1,49 @@
-const TimeCapsule = require('../models/timeCapsuleModel');
-const { upload, uploadFile } = require('../utils/fileStorage');
+const { Storage } = require('@google-cloud/storage');
+const mongoose = require('mongoose');
+const TimeCapsule = require('../models/timeCapsuleModel'); // Ensure this path is correct
 
-exports.createTimeCapsule = async (req, res) => {
-  try {
-    const { userId, text, openDate } = req.body;
-    const file = req.file;
+const storage = new Storage();
+const bucket = storage.bucket(process.env.GCS_BUCKET_NAME);
 
-    let imageUrl = null;
-    if (file) {
-      imageUrl = await uploadFile(file);
+const createTimeCapsule = async (req, res) => {
+    try {
+        console.log('Request body:', req.body); // Log the request body
+        console.log('Request file:', req.file); // Log the file information
+
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
+
+        const blob = bucket.file(req.file.originalname);
+        const blobStream = blob.createWriteStream({
+            resumable: false,
+        });
+
+        blobStream.on('finish', async () => {
+            console.log('File upload finished'); // Log when the file upload is finished
+
+            const timeCapsule = new TimeCapsule({
+                userId: req.body.userId, // Assuming userId is part of the request body
+                text: req.body.text, // Assuming text is part of the request body
+                openDate: req.body.openDate, // Assuming openDate is part of the request body
+                imageUrl: `https://storage.googleapis.com/${bucket.name}/${blob.name}`,
+            });
+
+            await timeCapsule.save();
+
+            res.status(200).json({ message: 'Time capsule created successfully', timeCapsule });
+        });
+
+        blobStream.on('error', (err) => {
+            console.error('Blob stream error:', err); // Log any blob stream errors
+            res.status(500).json({ message: 'Failed to upload file to Google Cloud Storage', error: err });
+        });
+
+        blobStream.end(req.file.buffer);
+    } catch (err) {
+        console.error('Error in createTimeCapsule:', err); // Log the error
+        res.status(500).json({ message: 'Failed to create time capsule', error: err });
     }
-
-    const newCapsule = new TimeCapsule({
-      userId,
-      text,
-      openDate,
-      imageUrl,
-    });
-
-    await newCapsule.save();
-    res.status(201).json(newCapsule);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to create time capsule', error });
-  }
 };
 
-exports.getAllTimeCapsules = async (req, res) => {
-  try {
-    const capsules = await TimeCapsule.find();
-    res.status(200).json(capsules);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch time capsules', error });
-  }
-};
+module.exports = { createTimeCapsule };
