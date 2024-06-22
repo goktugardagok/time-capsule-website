@@ -2,7 +2,9 @@ const { Storage } = require('@google-cloud/storage');
 const mongoose = require('mongoose');
 const TimeCapsule = require('../models/timeCapsuleModel'); // Make sure you have the correct path to your TimeCapsule model
 
-const storage = new Storage();
+// Parse the JSON credentials
+const gcsKeyJson = JSON.parse(process.env.GCS_KEY_JSON);
+const storage = new Storage({ credentials: gcsKeyJson });
 const bucket = storage.bucket(process.env.GCS_BUCKET_NAME);
 
 const createTimeCapsule = async (req, res) => {
@@ -25,8 +27,8 @@ const createTimeCapsule = async (req, res) => {
             const timeCapsule = new TimeCapsule({
                 userId: req.body.userId,
                 text: req.body.text,
-                openDate: req.body.openDate,
-                imageUrl: `https://storage.googleapis.com/${bucket.name}/${blob.name}`,
+                openDate: new Date(req.body.openDate),
+                fileUrl: `https://storage.googleapis.com/${bucket.name}/${blob.name}`,
             });
 
             await timeCapsule.save();
