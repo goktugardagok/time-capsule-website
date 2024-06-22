@@ -2,3 +2,4 @@ node_modules/
 uploads/
 src/config/service-account-key.json
 ".env" 
+".env" 
