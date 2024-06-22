@@ -1,6 +1,6 @@
 const { Storage } = require('@google-cloud/storage');
 const mongoose = require('mongoose');
-const TimeCapsule = require('../models/timeCapsuleModel'); // Ensure this path is correct
+const TimeCapsule = require('../models/timeCapsuleModel'); // Make sure you have the correct path to your TimeCapsule model
 
 const storage = new Storage();
 const bucket = storage.bucket(process.env.GCS_BUCKET_NAME);
@@ -23,9 +23,9 @@ const createTimeCapsule = async (req, res) => {
             console.log('File upload finished'); // Log when the file upload is finished
 
             const timeCapsule = new TimeCapsule({
-                userId: req.body.userId, // Assuming userId is part of the request body
-                text: req.body.text, // Assuming text is part of the request body
-                openDate: req.body.openDate, // Assuming openDate is part of the request body
+                userId: req.body.userId,
+                text: req.body.text,
+                openDate: req.body.openDate,
                 imageUrl: `https://storage.googleapis.com/${bucket.name}/${blob.name}`,
             });
 
