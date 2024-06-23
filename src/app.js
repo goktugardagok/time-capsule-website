@@ -1,7 +1,13 @@
+const path = require('path');
+console.log('Current directory:', __dirname); // Add this line to log the current directory
+
+// Your existing code
+
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const routes = require('src/routes/timeCapsuleRoutes'); // Adjust the path if needed
+const routes = require('./routes/timeCapsuleRoutes'); // Correct relative path
 const { Storage } = require('@google-cloud/storage');
 const path = require('path');
 

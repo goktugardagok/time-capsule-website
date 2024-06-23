@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const timeCapsuleController = require('src/controllers/timeCapsuleController'); // Adjust the path if needed
+const timeCapsuleController = require('../controllers/timeCapsuleController'); // Correct relative path
 
 // Configure Multer storage and file filter
 const storage = multer.memoryStorage();
