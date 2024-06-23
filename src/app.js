@@ -1,7 +1,3 @@
-const path = require('path');
-console.log('Current directory:', __dirname); // Add this line to log the current directory
-
-// Your existing code
 
 
 const express = require('express');
