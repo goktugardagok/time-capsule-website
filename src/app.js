@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const timeCapsuleRoutes = require('./timeCapsuleRoutes');
+const timeCapsuleRoutes = require('./routes/timeCapsuleRoutes'); // Updated path
 
 dotenv.config();
 
