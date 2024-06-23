@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const routes = require('src/routes/timeCapsuleRoutes.js'); // Adjust the path if needed
+const routes = require('src/routes/timeCapsuleRoutes'); // Adjust the path if needed
 const { Storage } = require('@google-cloud/storage');
 const path = require('path');
 
