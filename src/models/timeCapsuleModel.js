@@ -13,12 +13,12 @@ const timeCapsuleSchema = new mongoose.Schema({
         type: Date,
         required: true,
     },
-    fileUrl: {
+    imageUrl: {
         type: String,
+        required: true,
     },
 }, {
     timestamps: true,
 });
 
-module.exports = mongoose.model('TimeCapsule',
-timeCapsuleSchema);
+module.exports = mongoose.model('TimeCapsule', timeCapsuleSchema);
