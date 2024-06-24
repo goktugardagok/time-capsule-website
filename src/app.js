@@ -1,10 +1,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const routes = require('./routes/timeCapsuleRoutes'); // Correct relative path
+const routes = require('./routes/timeCapsuleRoutes');
 const { Storage } = require('@google-cloud/storage');
 const path = require('path');
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -25,8 +24,8 @@ app.listen(PORT, () => {
 });
 
 // Initialize Google Cloud Storage with the JSON content from the environment variable
-const gcsKeyJson = process.env.GCS_KEY_JSON;
-const gcsKeyFile = path.join(__dirname, 'service-account-key.json');
-require('fs').writeFileSync(gcsKeyFile, gcsKeyJson);
+const gcsKeyJson = JSON.parse(process.env.GCS_KEY_JSON);
+const storage = new Storage({ credentials: gcsKeyJson });
+const bucket = storage.bucket(process.env.GCS_BUCKET_NAME);
 
-const storage = new Storage({ keyFilename: gcsKeyFile });
+module.exports = { bucket }; // Export the bucket for use in controllers

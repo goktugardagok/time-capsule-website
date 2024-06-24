@@ -1,9 +1,6 @@
-const { Storage } = require('@google-cloud/storage');
+const { bucket } = require('../app');
 const mongoose = require('mongoose');
-const TimeCapsule = require('../models/timeCapsuleModel'); // Correct relative path
-
-const storage = new Storage();
-const bucket = storage.bucket(process.env.GCS_BUCKET_NAME);
+const TimeCapsule = require('../models/timeCapsuleModel'); // Ensure the correct path to your model
 
 const createTimeCapsule = async (req, res) => {
     try {
