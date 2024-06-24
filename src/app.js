@@ -1,9 +1,7 @@
-// src/app.js
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const routes = require('./routes/timeCapsuleRoutes');
-const path = require('path');
 const { Storage } = require('@google-cloud/storage');
 
 const app = express();
@@ -19,7 +17,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 .then(() => console.log('MongoDB connected'))
 .catch(err => console.error('MongoDB connection error:', err));
 
-app.use('/', (req, res) => {
+app.get('/', (req, res) => {
     res.send('Welcome to the Time Capsule API');
 });
 
@@ -29,10 +27,8 @@ app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
 
-// Initialize Google Cloud Storage with the JSON content from the environment variable
-const gcsKeyJson = process.env.GCS_KEY_JSON;
-const gcsKeyFile = path.join(__dirname, 'service-account-key.json');
-require('fs').writeFileSync(gcsKeyFile, gcsKeyJson);
+// Initialize Google Cloud Storage with credentials from environment variables
+const gcsKeyJson = JSON.parse(process.env.GCS_KEY_JSON);
+const storage = new Storage({ credentials: gcsKeyJson });
 
-const storage = new Storage({ keyFilename: gcsKeyFile });
 module.exports = app;
