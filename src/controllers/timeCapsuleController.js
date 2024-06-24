@@ -1,13 +1,14 @@
 const { Storage } = require('@google-cloud/storage');
-const TimeCapsule = require('../models/timeCapsuleModel');
 const mongoose = require('mongoose');
+const TimeCapsule = require('../models/timeCapsuleModel'); // Make sure you have the correct path to your TimeCapsule model
 
-const gcsKeyJson = JSON.parse(process.env.GCS_KEY_JSON);
-const storage = new Storage({ credentials: gcsKeyJson });
 const bucket = storage.bucket(process.env.GCS_BUCKET_NAME);
 
 const createTimeCapsule = async (req, res) => {
     try {
+        console.log('Request body:', req.body); // Log the request body
+        console.log('Request file:', req.file); // Log the file information
+
         if (!req.file) {
             return res.status(400).json({ message: 'No file uploaded' });
         }
@@ -18,11 +19,11 @@ const createTimeCapsule = async (req, res) => {
         });
 
         blobStream.on('finish', async () => {
+            console.log('File upload finished'); // Log when the file upload is finished
+
             const timeCapsule = new TimeCapsule({
-                userId: req.body.userId,
-                text: req.body.text,
-                openDate: new Date(req.body.openDate),
-                imageUrl: `https://storage.googleapis.com/${bucket.name}/${blob.name}`,
+                fileUrl: `https://storage.googleapis.com/${bucket.name}/${blob.name}`,
+                // Add other fields you want to save in your database
             });
 
             await timeCapsule.save();
@@ -31,11 +32,13 @@ const createTimeCapsule = async (req, res) => {
         });
 
         blobStream.on('error', (err) => {
+            console.error('Blob stream error:', err); // Log any blob stream errors
             res.status(500).json({ message: 'Failed to upload file to Google Cloud Storage', error: err });
         });
 
         blobStream.end(req.file.buffer);
     } catch (err) {
+        console.error('Error in createTimeCapsule:', err); // Log the error
         res.status(500).json({ message: 'Failed to create time capsule', error: err });
     }
 };
