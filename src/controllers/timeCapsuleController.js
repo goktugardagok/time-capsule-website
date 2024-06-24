@@ -1,4 +1,3 @@
-const { bucket } = require('../app');
 const mongoose = require('mongoose');
 const TimeCapsule = require('../models/timeCapsuleModel'); // Ensure the correct path to your model
 
@@ -11,7 +10,7 @@ const createTimeCapsule = async (req, res) => {
             return res.status(400).json({ message: 'No file uploaded' });
         }
 
-        const blob = bucket.file(req.file.originalname);
+        const blob = req.app.locals.bucket.file(req.file.originalname);
         const blobStream = blob.createWriteStream({
             resumable: false,
         });
@@ -23,7 +22,7 @@ const createTimeCapsule = async (req, res) => {
                 userId: req.body.userId,
                 text: req.body.text,
                 openDate: req.body.openDate,
-                imageUrl: `https://storage.googleapis.com/${bucket.name}/${blob.name}`,
+                imageUrl: `https://storage.googleapis.com/${blob.name}`,
             });
 
             await timeCapsule.save();
