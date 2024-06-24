@@ -3,8 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const routes = require('./routes/timeCapsuleRoutes');
 const { Storage } = require('@google-cloud/storage');
-const path = require('path');
-const fs = require('fs');
+const { GoogleAuth } = require('google-auth-library');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -30,10 +29,12 @@ app.listen(PORT, () => {
 });
 
 // Initialize Google Cloud Storage with the JSON content from the environment variable
-const gcsKeyJson = process.env.GCS_KEY_JSON;
-const gcsKeyFile = path.join(__dirname, 'service-account-key.json');
-fs.writeFileSync(gcsKeyFile, gcsKeyJson);
+const gcsKeyJson = JSON.parse(process.env.GCS_KEY_JSON);
+const auth = new GoogleAuth({
+  credentials: gcsKeyJson,
+  scopes: 'https://www.googleapis.com/auth/cloud-platform',
+});
 
-const storage = new Storage({ keyFilename: gcsKeyFile });
+const storage = new Storage({ auth });
 
 module.exports = app;
