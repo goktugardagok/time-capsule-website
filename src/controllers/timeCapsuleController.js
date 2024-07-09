@@ -1,53 +1,37 @@
+const TimeCapsule = require('../models/timeCapsuleModel');
+const upload = require('../utils/fileStorage');
 const mongoose = require('mongoose');
 const Grid = require('gridfs-stream');
-const TimeCapsule = require('../models/timeCapsuleModel');
 
-const conn = mongoose.connection;
 let gfs;
 
-conn.once('open', () => {
-    gfs = Grid(conn.db, mongoose.mongo);
+mongoose.connection.once('open', () => {
+    gfs = Grid(mongoose.connection.db, mongoose.mongo);
     gfs.collection('uploads');
 });
 
 const createTimeCapsule = async (req, res) => {
     try {
-        console.log('Request body:', req.body);
-        console.log('Request file:', req.file);
+        const { userId, text, openDate } = req.body;
+        const file = req.file;
 
-        if (!req.file) {
-            return res.status(400).json({ message: 'No file uploaded' });
-        }
-
-        const timeCapsule = new TimeCapsule({
-            userId: req.body.userId,
-            text: req.body.text,
-            openDate: req.body.openDate,
-            imageUrl: `/api/file/${req.file.id}`
+        const newTimeCapsule = new TimeCapsule({
+            userId,
+            text,
+            openDate,
+            fileId: file.id,
+            fileName: file.filename
         });
 
-        await timeCapsule.save();
+        await newTimeCapsule.save();
 
-        res.status(200).json({ message: 'Time capsule created successfully', timeCapsule });
-    } catch (err) {
-        console.error('Error in createTimeCapsule:', err);
-        res.status(500).json({ message: 'Failed to create time capsule', error: err });
+        res.status(201).json({ message: 'Time capsule created successfully' });
+    } catch (error) {
+        console.error('Error creating time capsule:', error);
+        res.status(500).json({ error: 'Error creating time capsule' });
     }
 };
 
-const getFile = async (req, res) => {
-    try {
-        gfs.files.findOne({ _id: mongoose.Types.ObjectId(req.params.id) }, (err, file) => {
-            if (!file || file.length === 0) {
-                return res.status(404).json({ message: 'No file exists' });
-            }
-            const readstream = gfs.createReadStream(file.filename);
-            readstream.pipe(res);
-        });
-    } catch (err) {
-        console.error('Error in getFile:', err);
-        res.status(500).json({ message: 'Failed to get file', error: err });
-    }
+module.exports = {
+    createTimeCapsule
 };
-
-module.exports = { createTimeCapsule, getFile };

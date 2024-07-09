@@ -1,13 +1,20 @@
-const { GridFsStorage } = require('multer-gridfs-storage');
+const GridFsStorage = require('multer-gridfs-storage');
+const multer = require('multer');
 
+// MongoDB URI
+const mongoURI = process.env.MONGODB_URI;
+
+// Create storage engine
 const storage = new GridFsStorage({
-    url: process.env.MONGODB_URI,
+    url: mongoURI,
     file: (req, file) => {
         return {
-            bucketName: 'uploads', // GridFS collection name
-            filename: `${Date.now()}_${file.originalname}`
+            bucketName: 'uploads', // Bucket name in MongoDB
+            filename: `${Date.now()}-${file.originalname}`
         };
     }
 });
 
-module.exports = storage;
+const upload = multer({ storage });
+
+module.exports = upload;

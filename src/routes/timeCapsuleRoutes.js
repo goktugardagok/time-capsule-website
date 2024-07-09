@@ -1,12 +1,8 @@
 const express = require('express');
-const multer = require('multer');
-const { createTimeCapsule, getFile } = require('../controllers/timeCapsuleController');
-const storage = require('../utils/fileStorage');
-
 const router = express.Router();
-const upload = multer({ storage });
+const upload = require('../utils/fileStorage'); // Adjust the path if necessary
+const timeCapsuleController = require('../controllers/timeCapsuleController');
 
-router.post('/create', upload.single('file'), createTimeCapsule);
-router.get('/file/:id', getFile);
+router.post('/create', upload.single('file'), timeCapsuleController.createTimeCapsule);
 
 module.exports = router;
