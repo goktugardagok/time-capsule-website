@@ -1,46 +1,53 @@
-const { Storage } = require('@google-cloud/storage');
 const mongoose = require('mongoose');
-const TimeCapsule = require('../models/timeCapsuleModel'); // Make sure you have the correct path to your TimeCapsule model
+const Grid = require('gridfs-stream');
+const TimeCapsule = require('../models/timeCapsuleModel');
 
-const bucket = storage.bucket(process.env.GCS_BUCKET_NAME);
+const conn = mongoose.connection;
+let gfs;
+
+conn.once('open', () => {
+    gfs = Grid(conn.db, mongoose.mongo);
+    gfs.collection('uploads');
+});
 
 const createTimeCapsule = async (req, res) => {
     try {
-        console.log('Request body:', req.body); // Log the request body
-        console.log('Request file:', req.file); // Log the file information
+        console.log('Request body:', req.body);
+        console.log('Request file:', req.file);
 
         if (!req.file) {
             return res.status(400).json({ message: 'No file uploaded' });
         }
 
-        const blob = bucket.file(req.file.originalname);
-        const blobStream = blob.createWriteStream({
-            resumable: false,
+        const timeCapsule = new TimeCapsule({
+            userId: req.body.userId,
+            text: req.body.text,
+            openDate: req.body.openDate,
+            imageUrl: `/api/file/${req.file.id}`
         });
 
-        blobStream.on('finish', async () => {
-            console.log('File upload finished'); // Log when the file upload is finished
+        await timeCapsule.save();
 
-            const timeCapsule = new TimeCapsule({
-                fileUrl: `https://storage.googleapis.com/${bucket.name}/${blob.name}`,
-                // Add other fields you want to save in your database
-            });
-
-            await timeCapsule.save();
-
-            res.status(200).json({ message: 'Time capsule created successfully', timeCapsule });
-        });
-
-        blobStream.on('error', (err) => {
-            console.error('Blob stream error:', err); // Log any blob stream errors
-            res.status(500).json({ message: 'Failed to upload file to Google Cloud Storage', error: err });
-        });
-
-        blobStream.end(req.file.buffer);
+        res.status(200).json({ message: 'Time capsule created successfully', timeCapsule });
     } catch (err) {
-        console.error('Error in createTimeCapsule:', err); // Log the error
+        console.error('Error in createTimeCapsule:', err);
         res.status(500).json({ message: 'Failed to create time capsule', error: err });
     }
 };
 
-module.exports = { createTimeCapsule };
+const getFile = async (req, res) => {
+    try {
+        gfs.files.findOne({ _id: mongoose.Types.ObjectId(req.params.id) }, (err, file) => {
+            if (!file || file.length === 0) {
+                return res.status(404).json({ message: 'No file exists' });
+            }
+            const readstream = gfs.createReadStream(file.filename);
+            readstream.pipe(res);
+        });
+    } catch (err) {
+        console.error('Error in getFile:', err);
+        res.status(500).json({ message: 'Failed to get file', error: err });
+    }
+};
+
+module.exports = { createTimeCapsule, getFile };
