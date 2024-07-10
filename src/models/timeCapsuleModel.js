@@ -1,28 +1,24 @@
-const mongoose = require('mongoose');
+const TimeCapsule = require('../models/timeCapsuleModel');
 
-const timeCapsuleSchema = new mongoose.Schema({
-    userId: {
-        type: String,
-        required: true,
-    },
-    text: {
-        type: String,
-        required: true,
-    },
-    openDate: {
-        type: Date,
-        required: true,
-    },
-    fileId: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-    },
-    fileName: {
-        type: String,
-        required: true,
-    },
-});
+const createTimeCapsule = async (req, res) => {
+  try {
+    const { userId, text, openDate } = req.body;
+    const file = req.file;
 
-const TimeCapsule = mongoose.model('TimeCapsule', timeCapsuleSchema);
+    const newTimeCapsule = new TimeCapsule({
+      userId,
+      text,
+      openDate,
+      fileId: file.id, // GridFS file ID
+      fileName: file.filename // Original filename
+    });
 
-module.exports = TimeCapsule;
+    await newTimeCapsule.save();
+    res.status(201).json({ message: 'Time capsule created successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+module.exports = { createTimeCapsule };

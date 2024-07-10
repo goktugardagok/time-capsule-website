@@ -1,20 +1,18 @@
-const GridFsStorage = require('multer-gridfs-storage').GridFsStorage;
+const GridFsStorage = require('multer-gridfs-storage');
 const multer = require('multer');
-require('dotenv').config();
+const mongoose = require('mongoose');
 
-// MongoDB URI from environment variables
 const mongoURI = process.env.MONGODB_URI;
 
-// Create storage engine
 const storage = new GridFsStorage({
-    url: mongoURI,
-    options: { useNewUrlParser: true, useUnifiedTopology: true },
-    file: (req, file) => {
-        return {
-            bucketName: 'uploads', // bucket name in MongoDB
-            filename: `${Date.now()}-${file.originalname}`
-        };
-    }
+  url: mongoURI,
+  options: { useNewUrlParser: true, useUnifiedTopology: true },
+  file: (req, file) => {
+    return {
+      bucketName: 'uploads', // collection name
+      filename: `${Date.now()}-${file.originalname}`
+    };
+  }
 });
 
 const upload = multer({ storage });
