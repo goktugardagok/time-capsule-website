@@ -5,7 +5,7 @@ const timeCapsuleSchema = new mongoose.Schema({
     text: { type: String, required: true },
     imageUrl: { type: String, required: true },
     openDate: { type: Date, required: true },
-    createdAt: { type: Date, default: Date.now }
+    createdAt: { type: Date, default: Date.now },
 });
 
 const TimeCapsule = mongoose.model('TimeCapsule', timeCapsuleSchema);

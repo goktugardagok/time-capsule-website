@@ -1,34 +1,26 @@
 const TimeCapsule = require('../models/timeCapsuleModel');
-const upload = require('../utils/fileStorage');
+const upload = require('../utils/fileStorage').single('file');
 
-const createTimeCapsule = async (req, res) => {
-  try {
-    const { userId, text, openDate } = req.body;
-    const file = req.file;
+exports.createTimeCapsule = (req, res) => {
+    upload(req, res, async (err) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        const { userId, text, openDate } = req.body;
+        const fileUrl = req.file.filename;
 
-    if (!file) {
-      return res.status(400).json({ error: 'File is required' });
-    }
+        const newTimeCapsule = new TimeCapsule({
+            userId,
+            text,
+            imageUrl: fileUrl,
+            openDate
+        });
 
-    const imageUrl = `/uploads/${file.filename}`;
-
-    const newTimeCapsule = new TimeCapsule({
-      userId,
-      text,
-      imageUrl,
-      openDate
+        try {
+            const savedTimeCapsule = await newTimeCapsule.save();
+            res.status(201).json(savedTimeCapsule);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
     });
-
-    await newTimeCapsule.save();
-
-    res.status(201).json({ message: 'Time capsule created successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
-  }
-};
-
-module.exports = {
-  createTimeCapsule,
-  upload
 };

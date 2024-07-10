@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { createTimeCapsule, upload } = require('../controllers/timeCapsuleController');
+const timeCapsuleController = require('../controllers/timeCapsuleController');
 
-router.post('/create', upload.single('file'), createTimeCapsule);
+router.post('/create', timeCapsuleController.createTimeCapsule);
 
 module.exports = router;
