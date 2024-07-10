@@ -1,8 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const routes = require('./routes/timeCapsuleRoutes');
-require('dotenv').config();
+const timeCapsuleRoutes = require('./routes/timeCapsuleRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,7 +20,7 @@ app.get('/', (req, res) => {
   res.send('Welcome to the Time Capsule API');
 });
 
-app.use('/api', routes);
+app.use('/api', timeCapsuleRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

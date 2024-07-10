@@ -1,35 +1,60 @@
 const TimeCapsule = require('../models/timeCapsuleModel');
-const upload = require('../utils/fileStorage');
 const mongoose = require('mongoose');
+const GridFsStorage = require('multer-gridfs-storage');
+const multer = require('multer');
+const crypto = require('crypto');
+const path = require('path');
 const Grid = require('gridfs-stream');
 
-const conn = mongoose.connection;
-let gfs;
-
-conn.once('open', () => {
-  gfs = Grid(conn.db, mongoose.mongo);
-  gfs.collection('uploads');
+// Create a storage object with a given configuration
+const storage = new GridFsStorage({
+  url: process.env.MONGODB_URI,
+  file: (req, file) => {
+    return new Promise((resolve, reject) => {
+      crypto.randomBytes(16, (err, buf) => {
+        if (err) {
+          return reject(err);
+        }
+        const filename = buf.toString('hex') + path.extname(file.originalname);
+        const fileInfo = {
+          filename: filename,
+          bucketName: 'uploads'
+        };
+        resolve(fileInfo);
+      });
+    });
+  }
 });
+const upload = multer({ storage });
 
-const createTimeCapsule = (req, res) => {
-  upload.single('file')(req, res, (err) => {
-    if (err) {
-      return res.status(500).send({ message: 'Error uploading file' });
+const createTimeCapsule = async (req, res) => {
+  try {
+    const { userId, text, openDate } = req.body;
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ error: 'File is required' });
     }
 
-    const { userId, text, openDate } = req.body;
+    const imageUrl = `/uploads/${file.filename}`;
 
-    const newCapsule = new TimeCapsule({
+    const newTimeCapsule = new TimeCapsule({
       userId,
       text,
-      openDate,
-      fileId: req.file.id
+      imageUrl,
+      openDate
     });
 
-    newCapsule.save()
-      .then(() => res.status(201).send({ message: 'Time capsule created successfully' }))
-      .catch((err) => res.status(500).send({ message: 'Error creating time capsule', error: err }));
-  });
+    await newTimeCapsule.save();
+
+    res.status(201).json({ message: 'Time capsule created successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
 };
 
-module.exports = { createTimeCapsule };
+module.exports = {
+  createTimeCapsule,
+  upload
+};
