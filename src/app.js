@@ -1,12 +1,13 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const timeCapsuleRoutes = require('./src/routes/timeCapsuleRoutes');
+const timeCapsuleRoutes = require('./routes/timeCapsuleRoutes'); // Correct path
 
 const app = express();
 
-// Set EJS as templating engine
+// Set EJS as templating engine and set views directory
 app.set('view engine', 'ejs');
+app.set('views', './src/views'); // Correct path
 
 // Middleware
 app.use(bodyParser.json());
