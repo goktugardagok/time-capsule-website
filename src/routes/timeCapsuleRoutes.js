@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const timeCapsuleController = require('../controllers/timeCapsuleController');
-const upload = require('../utils/fileStorage');
+const upload = require('../utils/fileStorage').upload;
 
 router.post('/submit', upload.single('file'), timeCapsuleController.createTimeCapsule);
 router.get('/:id/countdown', timeCapsuleController.getCountdown);
