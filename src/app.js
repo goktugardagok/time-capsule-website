@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const path = require('path');
 const timeCapsuleRoutes = require('./routes/timeCapsuleRoutes');
+const TimeCapsule = require('./models/timeCapsuleModel');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,8 +28,13 @@ mongoose.connect(process.env.MONGODB_URI, {
 app.use('/api', timeCapsuleRoutes);
 
 // Default route
-app.get('/', (req, res) => {
-  res.send('Welcome to the Time Capsule API');
+app.get('/', async (req, res) => {
+  try {
+    const timeCapsules = await TimeCapsule.find();
+    res.render('index', { data: timeCapsules });
+  } catch (err) {
+    res.status(500).send('Error retrieving data');
+  }
 });
 
 // Start the server
