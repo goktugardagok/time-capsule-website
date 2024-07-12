@@ -1,6 +1,6 @@
 const TimeCapsule = require('../models/timeCapsuleModel');
 const mongoose = require('mongoose');
-const GridFsStorage = require('multer-gridfs-storage');
+const { GridFsStorage } = require('multer-gridfs-storage');
 const multer = require('multer');
 const crypto = require('crypto');
 const path = require('path');
