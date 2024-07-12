@@ -3,20 +3,66 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Time Capsules</title>
+  <title>Time Capsule</title>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const countdownElement = document.getElementById('countdown');
+      const contentElement = document.getElementById('content');
+      const capsuleId = 'YOUR_CAPSULE_ID'; // Replace with actual capsule ID
+
+      fetch(`/api/${capsuleId}/countdown`)
+        .then(response => response.json())
+        .then(data => {
+          const openDate = new Date(data.openDate);
+          const now = new Date();
+
+          if (now >= openDate) {
+            showContent();
+          } else {
+            startCountdown(openDate);
+          }
+        });
+
+      function startCountdown(openDate) {
+        const interval = setInterval(() => {
+          const now = new Date().getTime();
+          const distance = openDate - now;
+
+          const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+          countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+          if (distance < 0) {
+            clearInterval(interval);
+            countdownElement.innerHTML = "Time's up!";
+            showContent();
+          }
+        }, 1000);
+      }
+
+      function showContent() {
+        fetch(`/api/${capsuleId}/content`)
+          .then(response => response.json())
+          .then(data => {
+            contentElement.innerHTML = `
+              <p><strong>User ID:</strong> ${data.userId}</p>
+              <p><strong>Text:</strong> ${data.text}</p>
+              <img src="${data.imageUrl}" alt="Time Capsule Image" />
+            `;
+          })
+          .catch(error => {
+            contentElement.innerHTML = `<p>${error.message}</p>`;
+          });
+      }
+    });
+  </script>
 </head>
 <body>
-  <h1>Time Capsules</h1>
-  <ul>
-    <% data.forEach(function(item) { %>
-      <li>
-        <p>User ID: <%= item.userId %></p>
-        <p>Text: <%= item.text %></p>
-        <p>Open Date: <%= item.openDate %></p>
-        <p>Created At: <%= item.createdAt %></p>
-        <p>Image URL: <%= item.imageUrl %></p>
-      </li>
-    <% }); %>
-  </ul>
+  <h1>Time Capsule</h1>
+  <div id="countdown"></div>
+  <div id="content"></div>
 </body>
 </html>

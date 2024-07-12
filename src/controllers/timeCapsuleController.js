@@ -1,50 +1,39 @@
 const TimeCapsule = require('../models/timeCapsuleModel');
-const mongoose = require('mongoose');
-const { GridFsStorage } = require('multer-gridfs-storage');
-const multer = require('multer');
-const crypto = require('crypto');
-const path = require('path');
 
-// Create storage engine
-const storage = new GridFsStorage({
-    url: process.env.MONGODB_URI,
-    file: (req, file) => {
-        return new Promise((resolve, reject) => {
-            crypto.randomBytes(16, (err, buf) => {
-                if (err) {
-                    return reject(err);
-                }
-                const filename = buf.toString('hex') + path.extname(file.originalname);
-                const fileInfo = {
-                    filename: filename,
-                    bucketName: 'uploads'
-                };
-                resolve(fileInfo);
-            });
-        });
+// Get countdown data
+exports.getCountdown = async (req, res) => {
+  try {
+    const timeCapsule = await TimeCapsule.findById(req.params.id);
+    if (!timeCapsule) {
+      return res.status(404).json({ message: 'Time capsule not found' });
     }
-});
+    res.json({ openDate: timeCapsule.openDate });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
 
-const upload = multer({ storage });
+// Get time capsule content
+exports.getContent = async (req, res) => {
+  try {
+    const timeCapsule = await TimeCapsule.findById(req.params.id);
+    if (!timeCapsule) {
+      return res.status(404).json({ message: 'Time capsule not found' });
+    }
 
-exports.createTimeCapsule = (req, res) => {
-    upload.single('file')(req, res, (err) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
+    const now = new Date();
+    const openDate = new Date(timeCapsule.openDate);
 
-        console.log('Received data:', req.body); // Log received data for debugging
-
-        const { userId, text, openDate } = req.body;
-        const newCapsule = new TimeCapsule({
-            userId,
-            text,
-            imageUrl: req.file ? req.file.filename : '',
-            openDate: new Date(openDate)
-        });
-
-        newCapsule.save()
-            .then(() => res.status(201).send('Data received successfully'))
-            .catch(err => res.status(500).json({ error: err.message }));
-    });
+    if (now >= openDate) {
+      res.json({
+        userId: timeCapsule.userId,
+        text: timeCapsule.text,
+        imageUrl: timeCapsule.imageUrl
+      });
+    } else {
+      res.status(403).json({ message: 'Content not available yet' });
+    }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
