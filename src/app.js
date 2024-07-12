@@ -1,31 +1,31 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');
-const routes = require('./routes/timeCapsuleRoutes');
 const bodyParser = require('body-parser');
+const timeCapsuleRoutes = require('./src/routes/timeCapsuleRoutes');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+// Set EJS as templating engine
+app.set('view engine', 'ejs');
+
+// Middleware
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use('/api', timeCapsuleRoutes);
 
+// Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 })
 .then(() => console.log('MongoDB connected'))
-.catch(err => console.error('MongoDB connection error:', err));
+.catch((err) => console.log(err));
 
-app.get('/', (req, res) => {
-    res.send('Welcome to the Time Capsule API');
+// Route to display data
+app.get('/', async (req, res) => {
+    const TimeCapsule = mongoose.model('TimeCapsule');
+    const data = await TimeCapsule.find();
+    res.render('index', { data });
 });
 
-app.use('/api', routes);
-
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
-
-module.exports = app;
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

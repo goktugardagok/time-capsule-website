@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Capsules</title>
+</head>
+<body>
+    <h1>Time Capsules</h1>
+    <ul>
+        <% data.forEach(function(item) { %>
+            <li>
+                <p>UserID: <%= item.userId %></p>
+                <p>Text: <%= item.text %></p>
+                <p>Open Date: <%= item.openDate %></p>
+                <img src="<%= item.imageUrl %>" alt="Image">
+            </li>
+        <% }); %>
+    </ul>
+</body>
+</html>
