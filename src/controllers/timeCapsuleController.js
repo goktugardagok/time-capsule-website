@@ -1,5 +1,5 @@
 const TimeCapsule = require('../models/timeCapsuleModel');
-const { storage } = require('../utils/fileStorage');
+const upload = require('../utils/fileStorage');
 const mongoose = require('mongoose');
 const Grid = require('gridfs-stream');
 const path = require('path');
