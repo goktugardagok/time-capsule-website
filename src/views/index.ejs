@@ -4,6 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Time Capsule</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #4a90e2;
+            margin-bottom: 20px;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 20px;
+        }
+        input, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4a90e2;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #357abd;
+        }
+        hr {
+            width: 100%;
+            max-width: 600px;
+            border: none;
+            border-top: 1px solid #ccc;
+            margin: 20px 0;
+        }
+        #countdown, #content {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        #content img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+        }
+    </style>
     <script>
         async function getCountdown() {
             const id = document.getElementById('countdownId').value;
@@ -32,9 +94,9 @@
 
             if (response.status === 200) {
                 document.getElementById('content').innerHTML = `
-                    <p>User ID: ${data.userId}</p>
-                    <p>Message: ${data.text}</p>
-                    <img src="${data.imageUrl}" alt="Time Capsule Image" width="200"/>
+                    <p><strong>User ID:</strong> ${data.userId}</p>
+                    <p><strong>Message:</strong> ${data.text}</p>
+                    <img src="${data.imageUrl}" alt="Time Capsule Image"/>
                 `;
             } else {
                 document.getElementById('content').innerHTML = `<p>${data.message}</p>`;
@@ -56,15 +118,19 @@
     <hr>
 
     <h2>Get Countdown</h2>
-    <input type="text" id="countdownId" placeholder="Enter Time Capsule ID" required>
-    <button onclick="getCountdown()">Get Countdown</button>
-    <p id="countdown"></p>
+    <form onsubmit="event.preventDefault(); getCountdown();">
+        <input type="text" id="countdownId" placeholder="Enter Time Capsule ID" required>
+        <button type="submit">Get Countdown</button>
+    </form>
+    <div id="countdown"></div>
 
     <hr>
 
     <h2>Get Content</h2>
-    <input type="text" id="contentId" placeholder="Enter Time Capsule ID" required>
-    <button onclick="getContent()">Get Content</button>
+    <form onsubmit="event.preventDefault(); getContent();">
+        <input type="text" id="contentId" placeholder="Enter Time Capsule ID" required>
+        <button type="submit">Get Content</button>
+    </form>
     <div id="content"></div>
 </body>
 </html>
