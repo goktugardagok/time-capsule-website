@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
 const dotenv = require('dotenv');
-const timeCapsuleRoutes = require('./routes/timeCapsuleRoutes');
+const timeCapsuleRoutes = require('./src/routes/timeCapsuleRoutes');
 
 dotenv.config();
 
@@ -20,10 +20,10 @@ mongoose.connect(process.env.MONGODB_URI, {
   console.error('MongoDB connection error:', err);
 });
 
-app.set('views', path.join(__dirname, 'src/views'));
+app.set('views', path.join(__dirname, 'src', 'views'));
 app.set('view engine', 'ejs');
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'src', 'public')));
 
 app.use('/', timeCapsuleRoutes);
 
