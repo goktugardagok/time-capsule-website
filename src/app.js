@@ -20,7 +20,7 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, '../public'))); // Adjust path as needed
+app.use(express.static(path.join(__dirname, 'public'))); // Adjust path as needed
 
 // Routes
 const timeCapsuleRoutes = require('./routes/timeCapsuleRoutes');

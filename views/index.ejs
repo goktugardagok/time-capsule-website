@@ -2,115 +2,67 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Dünyan?n En Güzel K?z? ?çin</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/styles.css">
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #f06, #f79);
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            width: 90%;
-            max-width: 600px;
-        }
-        h1 {
-            font-size: 2em;
-            margin-bottom: 20px;
-        }
-        form {
-            margin-bottom: 20px;
-        }
-        input, textarea, button {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 5px;
-        }
-        button {
-            background: #f06;
-            color: #fff;
-            font-size: 1em;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background: #f79;
-        }
-        .result {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 10px;
-            border-radius: 5px;
-        }
-    </style>
+    <title>Time Capsule</title>
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to Our Time Capsule</h1>
-
-        <form action="/api/submit" method="post" enctype="multipart/form-data">
-            <input type="text" name="userId" placeholder="Your ID" required>
-            <textarea name="text" placeholder="Your heartfelt message" required></textarea>
+        <h1>Welcome to the Time Capsule API</h1>
+        <form id="createTimeCapsuleForm">
+            <input type="text" name="userId" placeholder="User ID" required>
+            <textarea name="text" placeholder="Your message" required></textarea>
             <input type="file" name="files" multiple required>
             <input type="datetime-local" name="openDate" required>
-            <button type="submit"><i class="fas fa-gift"></i> Create Time Capsule</button>
+            <button type="submit">Create Time Capsule</button>
         </form>
 
-        <div class="result">
-            <h2>Get Countdown</h2>
-            <form onsubmit="event.preventDefault(); getCountdown();">
-                <input type="text" id="countdownId" placeholder="Enter Time Capsule ID" required>
-                <button type="submit"><i class="fas fa-hourglass-half"></i> Get Countdown</button>
-            </form>
-            <div id="countdown"></div>
-        </div>
+        <h2>Get Countdown</h2>
+        <form id="getCountdownForm">
+            <input type="text" name="timeCapsuleId" placeholder="Enter Time Capsule ID" required>
+            <button type="submit">Get Countdown</button>
+        </form>
+        <div id="countdownResult" class="result"></div>
 
-        <div class="result">
-            <h2>Get Content</h2>
-            <form onsubmit="event.preventDefault(); getContent();">
-                <input type="text" id="contentId" placeholder="Enter Time Capsule ID" required>
-                <button type="submit"><i class="fas fa-box-open"></i> Get Content</button>
-            </form>
-            <div id="content"></div>
-        </div>
+        <h2>Get Content</h2>
+        <form id="getContentForm">
+            <input type="text" name="timeCapsuleId" placeholder="Enter Time Capsule ID" required>
+            <button type="submit">Get Content</button>
+        </form>
+        <div id="contentResult" class="result"></div>
     </div>
 
     <script>
-        async function getCountdown() {
-            const id = document.getElementById('countdownId').value;
-            const response = await fetch(`/api/countdown/${id}`);
-            const data = await response.json();
-            const timeLeft = new Date(data.timeLeft).toISOString().substr(11, 8);
-            document.getElementById('countdown').innerText = `Time left: ${timeLeft}`;
-        }
+        document.getElementById('createTimeCapsuleForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const response = await fetch('/api/submit', {
+                method: 'POST',
+                body: formData,
+            });
+            const result = await response.json();
+            alert(result.message);
+        });
 
-        async function getContent() {
-            const id = document.getElementById('contentId').value;
-            const response = await fetch(`/api/content/${id}`);
-            const data = await response.json();
-            if (data.text) {
-                let contentHtml = `Message: ${data.text}<br/>Files: <ul>`;
-                data.files.forEach(file => {
-                    contentHtml += `<li><a href="/api/files/${file}" target="_blank"><i class="fas fa-download"></i> Download File</a></li>`;
-                });
-                contentHtml += `</ul>`;
-                document.getElementById('content').innerHTML = contentHtml;
+        document.getElementById('getCountdownForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const response = await fetch(`/api/countdown/${formData.get('timeCapsuleId')}`);
+            const result = await response.json();
+            document.getElementById('countdownResult').innerText = `Time left: ${Math.floor(result.timeLeft / (1000 * 60 * 60 * 24))}d ${Math.floor((result.timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))}h ${Math.floor((result.timeLeft % (1000 * 60 * 60)) / (1000 * 60))}m ${Math.floor((result.timeLeft % (1000 * 60)) / 1000)}s`;
+        });
+
+        document.getElementById('getContentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const response = await fetch(`/api/content/${formData.get('timeCapsuleId')}`);
+            const result = await response.json();
+            if (result.message) {
+                document.getElementById('contentResult').innerText = result.message;
             } else {
-                document.getElementById('content').innerText = 'Content not available yet';
+                document.getElementById('contentResult').innerHTML = `<p>${result.text}</p><p>${result.files.join(', ')}</p>`;
             }
-        }
+        });
     </script>
 </body>
 </html>

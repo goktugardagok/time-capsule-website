@@ -1,16 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
-const storage = require('../utils/fileStorage');
-const upload = multer({ storage });
-const {
-    createTimeCapsule,
-    getCountdown,
-    getContent
-} = require('../controllers/timeCapsuleController');
+const timeCapsuleController = require('../controllers/timeCapsuleController');
 
-router.post('/api/submit', upload.array('files', 10), createTimeCapsule); // Adjust to handle multiple files
-router.get('/api/countdown/:id', getCountdown);
-router.get('/api/content/:id', getContent);
+router.post('/api/submit', timeCapsuleController.createTimeCapsule);
+router.get('/api/countdown/:id', timeCapsuleController.getCountdown);
+router.get('/api/content/:id', timeCapsuleController.getContent);
 
 module.exports = router;
