@@ -15,12 +15,14 @@ conn.once('open', () => {
 
 const createTimeCapsule = async (req, res) => {
   const { userId, text, openDate } = req.body;
-  const file = req.file;
+  const files = req.files;
+
+  const fileUrls = files.map(file => file.filename);
 
   const newTimeCapsule = new TimeCapsule({
     userId,
     text,
-    imageUrl: file ? file.filename : null,
+    imageUrl: fileUrls,
     openDate: new Date(openDate),
     createdAt: new Date()
   });
@@ -66,24 +68,34 @@ const getContent = async (req, res) => {
     return res.json({ message: 'Content not available yet' });
   }
 
-  if (capsule.imageUrl) {
-    const readstream = gfs.createReadStream({
-      filename: capsule.imageUrl,
-      root: 'uploads'
+  if (capsule.imageUrl && capsule.imageUrl.length > 0) {
+    res.json({
+      text: capsule.text,
+      files: capsule.imageUrl.map(filename => `/content/file/${filename}`)
     });
-
-    readstream.on('error', (err) => {
-      res.status(500).json({ message: 'An error occurred while retrieving the file' });
-    });
-
-    readstream.pipe(res);
   } else {
     res.json({ text: capsule.text });
   }
 };
 
+const getFile = (req, res) => {
+  const { filename } = req.params;
+  
+  const readstream = gfs.createReadStream({
+    filename: filename,
+    root: 'uploads'
+  });
+
+  readstream.on('error', (err) => {
+    res.status(500).json({ message: 'An error occurred while retrieving the file' });
+  });
+
+  readstream.pipe(res);
+};
+
 module.exports = {
   createTimeCapsule,
   getCountdown,
-  getContent
+  getContent,
+  getFile
 };

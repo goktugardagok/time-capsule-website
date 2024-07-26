@@ -8,11 +8,11 @@
 </head>
 <body>
   <h1>Welcome to the Time Capsule API</h1>
-  <form action="/api/submit" method="POST" enctype="multipart/form-data">
-    <input type="text" name="userId" placeholder="User ID">
-    <textarea name="text" placeholder="Your message"></textarea>
-    <input type="file" name="file">
-    <input type="datetime-local" name="openDate">
+  <form action="/create" method="POST" enctype="multipart/form-data">
+    <input type="text" name="userId" placeholder="User ID" required>
+    <textarea name="text" placeholder="Your message" required></textarea>
+    <input type="file" name="files" multiple>
+    <input type="datetime-local" name="openDate" required>
     <button type="submit">Create Time Capsule</button>
   </form>
 
@@ -24,7 +24,7 @@
   <h2>Get Content</h2>
   <input type="text" id="contentId" placeholder="Enter Time Capsule ID">
   <button onclick="getContent()">Get Content</button>
-  <p id="contentResult"></p>
+  <div id="contentResult"></div>
 
   <script>
     async function getCountdown() {
@@ -38,7 +38,21 @@
       const id = document.getElementById('contentId').value;
       const response = await fetch(`/content/${id}`);
       const data = await response.json();
-      document.getElementById('contentResult').textContent = data.text || data.message;
+      const contentResult = document.getElementById('contentResult');
+
+      if (data.files) {
+        contentResult.innerHTML = `<p>${data.text}</p>`;
+        data.files.forEach(file => {
+          const link = document.createElement('a');
+          link.href = file;
+          link.textContent = file;
+          link.target = '_blank';
+          contentResult.appendChild(link);
+          contentResult.appendChild(document.createElement('br'));
+        });
+      } else {
+        contentResult.textContent = data.text || data.message;
+      }
     }
   </script>
 </body>
