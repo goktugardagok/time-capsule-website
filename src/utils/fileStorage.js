@@ -1,21 +1,17 @@
 const multer = require('multer');
-const { MongoClient, GridFSBucket } = require('mongodb');
 const crypto = require('crypto');
 const path = require('path');
+const { MongoClient, GridFSBucket } = require('mongodb');
+const Grid = require('gridfs-stream');
+const mongoose = require('mongoose');
 
 const mongoURI = process.env.MONGODB_URI;
-const client = new MongoClient(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
+const conn = mongoose.createConnection(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
 
-let gfs, gridFSBucket;
-
-client.connect((err) => {
-    if (err) {
-        console.error('Error connecting to MongoDB:', err);
-    } else {
-        const db = client.db('your-database-name'); // Replace with your database name
-        gfs = new GridFSBucket(db, { bucketName: 'uploads' });
-        console.log('MongoDB connected and GridFSBucket initialized');
-    }
+let gfs;
+conn.once('open', () => {
+    gfs = Grid(conn.db, mongoose.mongo);
+    gfs.collection('uploads');
 });
 
 const storage = multer.diskStorage({

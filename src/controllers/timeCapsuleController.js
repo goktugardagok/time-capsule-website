@@ -2,21 +2,17 @@ const TimeCapsule = require('../models/timeCapsuleModel');
 const upload = require('../utils/fileStorage');
 const fs = require('fs');
 const path = require('path');
-const { GridFSBucket, MongoClient } = require('mongodb');
+const { MongoClient, GridFSBucket } = require('mongodb');
+const Grid = require('gridfs-stream');
+const mongoose = require('mongoose');
 
 const mongoURI = process.env.MONGODB_URI;
-const client = new MongoClient(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
+const conn = mongoose.createConnection(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
 
-let gfs, gridFSBucket;
-
-client.connect((err) => {
-    if (err) {
-        console.error('Error connecting to MongoDB:', err);
-    } else {
-        const db = client.db('your-database-name'); // Replace with your database name
-        gfs = new GridFSBucket(db, { bucketName: 'uploads' });
-        console.log('MongoDB connected and GridFSBucket initialized');
-    }
+let gfs;
+conn.once('open', () => {
+    gfs = Grid(conn.db, mongoose.mongo);
+    gfs.collection('uploads');
 });
 
 exports.createTimeCapsule = [
@@ -37,8 +33,8 @@ exports.createTimeCapsule = [
 
             // Move files to GridFS
             req.files.forEach(file => {
-                const uploadStream = gfs.openUploadStream(file.filename);
-                fs.createReadStream(path.join('uploads/', file.filename)).pipe(uploadStream);
+                const writestream = gfs.createWriteStream({ filename: file.filename });
+                fs.createReadStream(path.join('uploads/', file.filename)).pipe(writestream);
             });
 
             res.status(201).json({ message: 'Time capsule created successfully' });
