@@ -19,7 +19,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 }).then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../public')));
 
 const timeCapsuleRoutes = require('./routes/timeCapsuleRoutes');
 app.use('/', timeCapsuleRoutes);
