@@ -4,9 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Time Capsule</title>
+    <script>
+        async function getCountdown() {
+            const id = document.getElementById('countdownId').value;
+            const response = await fetch(`/api/countdown/${id}`);
+            const data = await response.json();
+            const openDate = new Date(data.openDate);
+            const now = new Date();
+            const timeLeft = openDate - now;
+
+            if (timeLeft > 0) {
+                const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+                document.getElementById('countdown').innerHTML = `Time left: ${days}d ${hours}h ${minutes}m ${seconds}s`;
+            } else {
+                document.getElementById('countdown').innerHTML = 'Time capsule is now open!';
+            }
+        }
+
+        async function getContent() {
+            const id = document.getElementById('contentId').value;
+            const response = await fetch(`/api/content/${id}`);
+            const data = await response.json();
+
+            if (response.status === 200) {
+                document.getElementById('content').innerHTML = `
+                    <p>User ID: ${data.userId}</p>
+                    <p>Message: ${data.text}</p>
+                    <img src="${data.imageUrl}" alt="Time Capsule Image" width="200"/>
+                `;
+            } else {
+                document.getElementById('content').innerHTML = `<p>${data.message}</p>`;
+            }
+        }
+    </script>
 </head>
 <body>
     <h1>Welcome to the Time Capsule API</h1>
+
     <form action="/api/submit" method="POST" enctype="multipart/form-data">
         <input type="text" name="userId" placeholder="User ID" required>
         <textarea name="text" placeholder="Your message" required></textarea>
@@ -14,5 +52,19 @@
         <input type="datetime-local" name="openDate" required>
         <button type="submit">Create Time Capsule</button>
     </form>
+
+    <hr>
+
+    <h2>Get Countdown</h2>
+    <input type="text" id="countdownId" placeholder="Enter Time Capsule ID" required>
+    <button onclick="getCountdown()">Get Countdown</button>
+    <p id="countdown"></p>
+
+    <hr>
+
+    <h2>Get Content</h2>
+    <input type="text" id="contentId" placeholder="Enter Time Capsule ID" required>
+    <button onclick="getContent()">Get Content</button>
+    <div id="content"></div>
 </body>
 </html>
