@@ -1,68 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/styles.css">
-    <title>Time Capsule</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/styles.css">
+  <title>Time Capsule</title>
 </head>
 <body>
-    <div class="container">
-        <h1>Welcome to the Time Capsule API</h1>
-        <form id="createTimeCapsuleForm">
-            <input type="text" name="userId" placeholder="User ID" required>
-            <textarea name="text" placeholder="Your message" required></textarea>
-            <input type="file" name="files" multiple required>
-            <input type="datetime-local" name="openDate" required>
-            <button type="submit">Create Time Capsule</button>
-        </form>
+  <h1>Welcome to the Time Capsule API</h1>
+  <form action="/api/submit" method="POST" enctype="multipart/form-data">
+    <input type="text" name="userId" placeholder="User ID">
+    <textarea name="text" placeholder="Your message"></textarea>
+    <input type="file" name="file">
+    <input type="datetime-local" name="openDate">
+    <button type="submit">Create Time Capsule</button>
+  </form>
 
-        <h2>Get Countdown</h2>
-        <form id="getCountdownForm">
-            <input type="text" name="timeCapsuleId" placeholder="Enter Time Capsule ID" required>
-            <button type="submit">Get Countdown</button>
-        </form>
-        <div id="countdownResult" class="result"></div>
+  <h2>Get Countdown</h2>
+  <input type="text" id="countdownId" placeholder="Enter Time Capsule ID">
+  <button onclick="getCountdown()">Get Countdown</button>
+  <p id="countdownResult"></p>
 
-        <h2>Get Content</h2>
-        <form id="getContentForm">
-            <input type="text" name="timeCapsuleId" placeholder="Enter Time Capsule ID" required>
-            <button type="submit">Get Content</button>
-        </form>
-        <div id="contentResult" class="result"></div>
-    </div>
+  <h2>Get Content</h2>
+  <input type="text" id="contentId" placeholder="Enter Time Capsule ID">
+  <button onclick="getContent()">Get Content</button>
+  <p id="contentResult"></p>
 
-    <script>
-        document.getElementById('createTimeCapsuleForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const response = await fetch('/api/submit', {
-                method: 'POST',
-                body: formData,
-            });
-            const result = await response.json();
-            alert(result.message);
-        });
+  <script>
+    async function getCountdown() {
+      const id = document.getElementById('countdownId').value;
+      const response = await fetch(`/countdown/${id}`);
+      const data = await response.json();
+      document.getElementById('countdownResult').textContent = data.timeLeft || data.message;
+    }
 
-        document.getElementById('getCountdownForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const response = await fetch(`/api/countdown/${formData.get('timeCapsuleId')}`);
-            const result = await response.json();
-            document.getElementById('countdownResult').innerText = `Time left: ${Math.floor(result.timeLeft / (1000 * 60 * 60 * 24))}d ${Math.floor((result.timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))}h ${Math.floor((result.timeLeft % (1000 * 60 * 60)) / (1000 * 60))}m ${Math.floor((result.timeLeft % (1000 * 60)) / 1000)}s`;
-        });
-
-        document.getElementById('getContentForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const response = await fetch(`/api/content/${formData.get('timeCapsuleId')}`);
-            const result = await response.json();
-            if (result.message) {
-                document.getElementById('contentResult').innerText = result.message;
-            } else {
-                document.getElementById('contentResult').innerHTML = `<p>${result.text}</p><p>${result.files.join(', ')}</p>`;
-            }
-        });
-    </script>
+    async function getContent() {
+      const id = document.getElementById('contentId').value;
+      const response = await fetch(`/content/${id}`);
+      const data = await response.json();
+      document.getElementById('contentResult').textContent = data.text || data.message;
+    }
+  </script>
 </body>
 </html>

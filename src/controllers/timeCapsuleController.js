@@ -1,81 +1,89 @@
 const TimeCapsule = require('../models/timeCapsuleModel');
-const upload = require('../utils/fileStorage');
-const fs = require('fs');
-const path = require('path');
-const { MongoClient, GridFSBucket } = require('mongodb');
-const Grid = require('gridfs-stream');
 const mongoose = require('mongoose');
+const Grid = require('gridfs-stream');
+const path = require('path');
+const fs = require('fs');
 
 const mongoURI = process.env.MONGODB_URI;
-const conn = mongoose.createConnection(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
+const conn = mongoose.createConnection(mongoURI);
 
 let gfs;
 conn.once('open', () => {
-    gfs = Grid(conn.db, mongoose.mongo);
-    gfs.collection('uploads');
+  gfs = Grid(conn.db, mongoose.mongo);
+  gfs.collection('uploads');
 });
 
-exports.createTimeCapsule = [
-    upload.array('files', 12), // Allowing multiple files, up to 12
-    async (req, res) => {
-        try {
-            const { userId, text, openDate } = req.body;
-            const files = req.files.map(file => file.filename);
+const createTimeCapsule = async (req, res) => {
+  const { userId, text, openDate } = req.body;
+  const file = req.file;
 
-            const newTimeCapsule = new TimeCapsule({
-                userId,
-                text,
-                files,
-                openDate
-            });
+  const newTimeCapsule = new TimeCapsule({
+    userId,
+    text,
+    imageUrl: file ? file.filename : null,
+    openDate: new Date(openDate),
+    createdAt: new Date()
+  });
 
-            await newTimeCapsule.save();
+  await newTimeCapsule.save();
 
-            // Move files to GridFS
-            req.files.forEach(file => {
-                const writestream = gfs.createWriteStream({ filename: file.filename });
-                fs.createReadStream(path.join('uploads/', file.filename)).pipe(writestream);
-            });
-
-            res.status(201).json({ message: 'Time capsule created successfully' });
-        } catch (error) {
-            res.status(500).json({ message: 'Error creating time capsule', error });
-        }
-    }
-];
-
-exports.getCountdown = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const timeCapsule = await TimeCapsule.findById(id);
-
-        if (!timeCapsule) {
-            return res.status(404).json({ message: 'Time capsule not found' });
-        }
-
-        const timeLeft = new Date(timeCapsule.openDate) - new Date();
-
-        res.json({ timeLeft });
-    } catch (error) {
-        res.status(500).json({ message: 'Error getting countdown', error });
-    }
+  res.json({ message: 'Time capsule created successfully' });
 };
 
-exports.getContent = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const timeCapsule = await TimeCapsule.findById(id);
+const getCountdown = async (req, res) => {
+  const { id } = req.params;
+  const capsule = await TimeCapsule.findById(id);
+  
+  if (!capsule) {
+    return res.status(404).json({ message: 'Time capsule not found' });
+  }
 
-        if (!timeCapsule) {
-            return res.status(404).json({ message: 'Time capsule not found' });
-        }
+  const now = new Date();
+  const timeLeft = capsule.openDate - now;
 
-        if (new Date() < new Date(timeCapsule.openDate)) {
-            return res.status(403).json({ message: 'Content not available yet' });
-        }
+  if (timeLeft <= 0) {
+    return res.json({ message: 'Time capsule is now open' });
+  }
 
-        res.json({ text: timeCapsule.text, files: timeCapsule.files });
-    } catch (error) {
-        res.status(500).json({ message: 'Error getting content', error });
-    }
+  const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+  res.json({ timeLeft: `${days}d ${hours}h ${minutes}m ${seconds}s` });
+};
+
+const getContent = async (req, res) => {
+  const { id } = req.params;
+  const capsule = await TimeCapsule.findById(id);
+
+  if (!capsule) {
+    return res.status(404).json({ message: 'Time capsule not found' });
+  }
+
+  const now = new Date();
+  if (now < capsule.openDate) {
+    return res.json({ message: 'Content not available yet' });
+  }
+
+  if (capsule.imageUrl) {
+    const readstream = gfs.createReadStream({
+      filename: capsule.imageUrl,
+      root: 'uploads'
+    });
+
+    readstream.on('error', (err) => {
+      res.status(500).json({ message: 'An error occurred while retrieving the file' });
+    });
+
+    readstream.pipe(res);
+  } else {
+    res.json({ text: capsule.text });
+  }
+};
+
+module.exports = {
+  createTimeCapsule,
+  getCountdown,
+  getContent
 };

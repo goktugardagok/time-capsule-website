@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
+const upload = require('../utils/fileStorage');
 const timeCapsuleController = require('../controllers/timeCapsuleController');
 
-router.post('/api/submit', timeCapsuleController.createTimeCapsule);
-router.get('/api/countdown/:id', timeCapsuleController.getCountdown);
-router.get('/api/content/:id', timeCapsuleController.getContent);
+router.post('/create', upload.single('file'), timeCapsuleController.createTimeCapsule);
+router.get('/countdown/:id', timeCapsuleController.getCountdown);
+router.get('/content/:id', timeCapsuleController.getContent);
 
 module.exports = router;
