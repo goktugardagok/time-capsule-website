@@ -96,7 +96,7 @@
                 document.getElementById('content').innerHTML = `
                     <p><strong>User ID:</strong> ${data.userId}</p>
                     <p><strong>Message:</strong> ${data.text}</p>
-                    <img src="${data.imageUrl}" alt="Time Capsule Image"/>
+                    ${data.fileUrls.map(url => `<img src="${url}" alt="Time Capsule Image"/>`).join('')}
                 `;
             } else {
                 document.getElementById('content').innerHTML = `<p>${data.message}</p>`;
@@ -110,7 +110,7 @@
     <form action="/api/submit" method="POST" enctype="multipart/form-data">
         <input type="text" name="userId" placeholder="User ID" required>
         <textarea name="text" placeholder="Your message" required></textarea>
-        <input type="file" name="file" required>
+        <input type="file" name="files" multiple required>
         <input type="datetime-local" name="openDate" required>
         <button type="submit">Create Time Capsule</button>
     </form>
