@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const Grid = require('gridfs-stream');
 const TimeCapsule = require('../models/timeCapsuleModel');
-const path = require('path');
 
 let gfs;
 const conn = mongoose.connection;
@@ -13,18 +12,12 @@ conn.once('open', () => {
 exports.createTimeCapsule = async (req, res) => {
   try {
     const { userId, text, openDate } = req.body;
-    const files = req.files;
-
-    let fileData = files.map(file => ({
-      filename: file.filename,
-      contentType: file.contentType,
-      fileId: file.id
-    }));
+    const file = req.file;
 
     const newTimeCapsule = new TimeCapsule({
       userId,
       text,
-      files: fileData,
+      imageUrl: file ? `/api/file/${file.filename}` : null,
       openDate,
       createdAt: new Date()
     });
@@ -83,29 +76,26 @@ exports.getTimeCapsuleContent = async (req, res) => {
       return res.status(403).json({ message: 'Time capsule cannot be opened yet' });
     }
 
-    const fileIds = timeCapsule.files.map(file => file.fileId);
-
-    let filesData = [];
-    for (let fileId of fileIds) {
-      const file = await gfs.files.findOne({ _id: mongoose.Types.ObjectId(fileId) });
-      if (file) {
-        filesData.push({
-          filename: file.filename,
-          contentType: file.contentType,
-          fileId: file._id
-        });
-      }
-    }
-
-    res.status(200).json({
-      userId: timeCapsule.userId,
-      text: timeCapsule.text,
-      files: filesData,
-      openDate: timeCapsule.openDate,
-      createdAt: timeCapsule.createdAt
-    });
+    res.status(200).json(timeCapsule);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error getting time capsule content' });
+  }
+};
+
+exports.getFile = async (req, res) => {
+  try {
+    const { filename } = req.params;
+    const file = await gfs.files.findOne({ filename });
+
+    if (!file) {
+      return res.status(404).json({ message: 'File not found' });
+    }
+
+    const readstream = gfs.createReadStream(file.filename);
+    readstream.pipe(res);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error getting file' });
   }
 };

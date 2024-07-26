@@ -9,22 +9,9 @@ const timeCapsuleSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  files: [
-    {
-      filename: {
-        type: String,
-        required: true
-      },
-      contentType: {
-        type: String,
-        required: true
-      },
-      fileId: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true
-      }
-    }
-  ],
+  imageUrl: {
+    type: String,
+  },
   openDate: {
     type: Date,
     required: true
