@@ -6,6 +6,9 @@ const path = require('path');
 
 dotenv.config();
 
+// Suppress Mongoose deprecation warning
+mongoose.set('strictQuery', false);
+
 const app = express();
 
 // Database connection
