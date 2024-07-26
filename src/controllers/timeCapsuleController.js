@@ -1,5 +1,23 @@
 const TimeCapsule = require('../models/timeCapsuleModel');
 const upload = require('../utils/fileStorage');
+const fs = require('fs');
+const path = require('path');
+const { GridFSBucket, MongoClient } = require('mongodb');
+
+const mongoURI = process.env.MONGODB_URI;
+const client = new MongoClient(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
+
+let gfs, gridFSBucket;
+
+client.connect((err) => {
+    if (err) {
+        console.error('Error connecting to MongoDB:', err);
+    } else {
+        const db = client.db('your-database-name'); // Replace with your database name
+        gfs = new GridFSBucket(db, { bucketName: 'uploads' });
+        console.log('MongoDB connected and GridFSBucket initialized');
+    }
+});
 
 exports.createTimeCapsule = [
     upload.array('files', 12), // Allowing multiple files, up to 12
@@ -16,6 +34,12 @@ exports.createTimeCapsule = [
             });
 
             await newTimeCapsule.save();
+
+            // Move files to GridFS
+            req.files.forEach(file => {
+                const uploadStream = gfs.openUploadStream(file.filename);
+                fs.createReadStream(path.join('uploads/', file.filename)).pipe(uploadStream);
+            });
 
             res.status(201).json({ message: 'Time capsule created successfully' });
         } catch (error) {
