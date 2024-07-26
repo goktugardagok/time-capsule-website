@@ -6,7 +6,7 @@ const { storage } = require('../utils/fileStorage');
 const router = express.Router();
 const upload = multer({ storage });
 
-router.post('/api/submit', upload.array('files'), createTimeCapsule);
+router.post('/api/submit', upload.array('files', 10), createTimeCapsule); // Allow up to 10 files
 router.get('/api/countdown/:id', getTimeCapsuleCountdown);
 router.get('/api/content/:id', getTimeCapsuleContent);
 
