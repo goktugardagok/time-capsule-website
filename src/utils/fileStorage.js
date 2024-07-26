@@ -1,4 +1,4 @@
-const GridFsStorage = require('multer-gridfs-storage');
+const { GridFsStorage } = require('multer-gridfs-storage');
 const multer = require('multer');
 
 const storage = new GridFsStorage({
@@ -6,12 +6,12 @@ const storage = new GridFsStorage({
     options: { useNewUrlParser: true, useUnifiedTopology: true },
     file: (req, file) => {
         return {
-            filename: `${Date.now()}-${file.originalname}`,
-            bucketName: 'uploads'
+            bucketName: 'uploads', // Setting the collection name, default name is fs
+            filename: `${Date.now()}-${file.originalname}`
         };
     }
 });
 
 const upload = multer({ storage });
 
-module.exports = { upload };
+module.exports = upload;
