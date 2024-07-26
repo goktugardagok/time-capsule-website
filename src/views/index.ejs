@@ -1,68 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Time Capsule</title>
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      const countdownElement = document.getElementById('countdown');
-      const contentElement = document.getElementById('content');
-      const capsuleId = 'YOUR_CAPSULE_ID'; // Replace with actual capsule ID
-
-      fetch(`/api/${capsuleId}/countdown`)
-        .then(response => response.json())
-        .then(data => {
-          const openDate = new Date(data.openDate);
-          const now = new Date();
-
-          if (now >= openDate) {
-            showContent();
-          } else {
-            startCountdown(openDate);
-          }
-        });
-
-      function startCountdown(openDate) {
-        const interval = setInterval(() => {
-          const now = new Date().getTime();
-          const distance = openDate - now;
-
-          const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-          const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-          countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-
-          if (distance < 0) {
-            clearInterval(interval);
-            countdownElement.innerHTML = "Time's up!";
-            showContent();
-          }
-        }, 1000);
-      }
-
-      function showContent() {
-        fetch(`/api/${capsuleId}/content`)
-          .then(response => response.json())
-          .then(data => {
-            contentElement.innerHTML = `
-              <p><strong>User ID:</strong> ${data.userId}</p>
-              <p><strong>Text:</strong> ${data.text}</p>
-              <img src="${data.imageUrl}" alt="Time Capsule Image" />
-            `;
-          })
-          .catch(error => {
-            contentElement.innerHTML = `<p>${error.message}</p>`;
-          });
-      }
-    });
-  </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Capsule</title>
 </head>
 <body>
-  <h1>Time Capsule</h1>
-  <div id="countdown"></div>
-  <div id="content"></div>
+    <h1>Welcome to the Time Capsule API</h1>
+    <form action="/api/submit" method="POST" enctype="multipart/form-data">
+        <input type="text" name="userId" placeholder="User ID" required>
+        <textarea name="text" placeholder="Your message" required></textarea>
+        <input type="file" name="file" required>
+        <input type="datetime-local" name="openDate" required>
+        <button type="submit">Create Time Capsule</button>
+    </form>
 </body>
 </html>
