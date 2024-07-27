@@ -1,7 +1,12 @@
 const mongoose = require('mongoose');
-const TimeCapsule = require('../models/timeCapsuleModel');
 const Grid = require('gridfs-stream');
-const mongoUri = process.env.MONGO_URI;
+const path = require('path');
+
+// Connect to MongoDB
+const mongoUri = process.env.MONGODB_URI;
+if (!mongoUri) {
+    throw new Error('MONGODB_URI environment variable is not defined');
+}
 
 const conn = mongoose.createConnection(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -11,24 +16,24 @@ conn.once('open', () => {
     gfs.collection('uploads');
 });
 
-exports.createTimeCapsule = (req, res) => {
+const createTimeCapsule = (req, res) => {
     const { userId, text, openDate } = req.body;
     const file = req.file;
 
-    const newTimeCapsule = new TimeCapsule({
+    // Save time capsule data to MongoDB
+    const timeCapsule = new TimeCapsule({
         userId,
         text,
-        imageUrl: file ? `/file/${file.filename}` : null,
-        openDate: new Date(openDate),
-        createdAt: new Date()
+        imageUrl: file ? `/uploads/${file.filename}` : '',
+        openDate,
     });
 
-    newTimeCapsule.save()
-        .then(timeCapsule => res.json({ message: 'Time capsule created successfully', timeCapsule }))
+    timeCapsule.save()
+        .then(() => res.status(201).json({ message: 'Time capsule created successfully' }))
         .catch(err => res.status(500).json({ error: err.message }));
 };
 
-exports.getCountdown = (req, res) => {
+const getTimeCapsule = (req, res) => {
     const { id } = req.params;
 
     TimeCapsule.findById(id)
@@ -37,41 +42,20 @@ exports.getCountdown = (req, res) => {
                 return res.status(404).json({ error: 'Time capsule not found' });
             }
 
-            const now = new Date();
+            const currentDate = new Date();
             const openDate = new Date(timeCapsule.openDate);
-            const timeLeft = openDate - now;
 
-            if (timeLeft <= 0) {
-                return res.json({ message: 'Time capsule is ready to be opened' });
+            if (currentDate >= openDate) {
+                res.status(200).json(timeCapsule);
+            } else {
+                const timeLeft = openDate - currentDate;
+                res.status(200).json({ message: `Time left: ${timeLeft}` });
             }
-
-            const seconds = Math.floor((timeLeft / 1000) % 60);
-            const minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
-            const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
-            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-
-            res.json({ days, hours, minutes, seconds });
         })
         .catch(err => res.status(500).json({ error: err.message }));
 };
 
-exports.getContent = (req, res) => {
-    const { id } = req.params;
-
-    TimeCapsule.findById(id)
-        .then(timeCapsule => {
-            if (!timeCapsule) {
-                return res.status(404).json({ error: 'Time capsule not found' });
-            }
-
-            const now = new Date();
-            const openDate = new Date(timeCapsule.openDate);
-
-            if (now < openDate) {
-                return res.json({ message: 'Time capsule is not ready to be opened yet' });
-            }
-
-            res.json({ timeCapsule });
-        })
-        .catch(err => res.status(500).json({ error: err.message }));
+module.exports = {
+    createTimeCapsule,
+    getTimeCapsule,
 };
