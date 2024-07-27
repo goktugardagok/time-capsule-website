@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Grid = require('gridfs-stream');
 const path = require('path');
+const TimeCapsule = require('../models/timeCapsuleModel');
 
 // Connect to MongoDB
 const mongoUri = process.env.MONGODB_URI;
@@ -55,7 +56,26 @@ const getTimeCapsule = (req, res) => {
         .catch(err => res.status(500).json({ error: err.message }));
 };
 
+const getCountdown = (req, res) => {
+    const { id } = req.params;
+
+    TimeCapsule.findById(id)
+        .then(timeCapsule => {
+            if (!timeCapsule) {
+                return res.status(404).json({ error: 'Time capsule not found' });
+            }
+
+            const currentDate = new Date();
+            const openDate = new Date(timeCapsule.openDate);
+
+            const timeLeft = openDate - currentDate;
+            res.status(200).json({ message: `Time left: ${timeLeft}` });
+        })
+        .catch(err => res.status(500).json({ error: err.message }));
+};
+
 module.exports = {
     createTimeCapsule,
     getTimeCapsule,
+    getCountdown,
 };
