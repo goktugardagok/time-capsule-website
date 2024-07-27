@@ -1,18 +1,15 @@
 const express = require('express');
-const router = express.Router();
 const multer = require('multer');
-const { GridFsStorage } = require('multer-gridfs-storage');
 const { createTimeCapsule, getTimeCapsule, getCountdown } = require('../controllers/timeCapsuleController');
+const router = express.Router();
 
-const storage = new GridFsStorage({
-    url: process.env.MONGODB_URI,
-    options: { useNewUrlParser: true, useUnifiedTopology: true },
-    file: (req, file) => {
-        return {
-            bucketName: 'uploads', // bucket name
-            filename: `${Date.now()}-${file.originalname}`
-        };
-    }
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/');
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.originalname);
+    },
 });
 
 const upload = multer({ storage });
