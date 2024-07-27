@@ -29,7 +29,7 @@ const storage = new GridFsStorage({
 const upload = multer({ storage });
 
 // Create a time capsule
-router.post('/create', upload.single('file'), createTimeCapsule);
+router.post('/submit', upload.single('file'), createTimeCapsule);
 
 // Get a time capsule
 router.get('/timecapsules/:id', getTimeCapsule);
