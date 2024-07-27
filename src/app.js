@@ -8,31 +8,29 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+    .then(() => console.log('MongoDB connected'))
+    .catch(err => console.log(err));
+
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Connect to MongoDB
-const mongoUri = process.env.MONGODB_URI;
-if (!mongoUri) {
-    throw new Error('MONGODB_URI environment variable is not defined');
-}
-
-mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.error('MongoDB connection error:', err));
-
-// Set up view engine
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
-// Serve static files
+// Static folder
 app.use(express.static(path.join(__dirname, 'public')));
+
+// View engine
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
 
 // Routes
 const timeCapsuleRoutes = require('./routes/timeCapsuleRoutes');
 app.use('/api', timeCapsuleRoutes);
 
-// Render index page
 app.get('/', (req, res) => {
     res.render('index');
 });

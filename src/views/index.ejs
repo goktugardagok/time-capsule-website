@@ -7,31 +7,67 @@
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-    <h1>Welcome to the Time Capsule API</h1>
-    <form action="/api/submit" method="post" enctype="multipart/form-data">
-        <label for="userId">User ID:</label>
-        <input type="text" id="userId" name="userId" required>
-        <label for="text">Your message:</label>
-        <textarea id="text" name="text" required></textarea>
-        <label for="file">Upload file:</label>
-        <input type="file" id="file" name="file" required>
-        <label for="openDate">Open Date:</label>
-        <input type="datetime-local" id="openDate" name="openDate" required>
-        <button type="submit">Create Time Capsule</button>
-    </form>
+    <div class="container">
+        <h1>Welcome to the Time Capsule API</h1>
 
-    <h2>Get Countdown</h2>
-    <form action="/api/countdown" method="get">
-        <label for="countdownId">Enter Time Capsule ID:</label>
-        <input type="text" id="countdownId" name="id" required>
-        <button type="submit">Get Countdown</button>
-    </form>
+        <div class="form-section">
+            <h2>Create Time Capsule</h2>
+            <form id="create-time-capsule-form" action="/api/submit" method="POST" enctype="multipart/form-data">
+                <label for="userId">User ID</label>
+                <input type="text" id="userId" name="userId" required>
 
-    <h2>Get Content</h2>
-    <form action="/api/timecapsules" method="get">
-        <label for="contentId">Enter Time Capsule ID:</label>
-        <input type="text" id="contentId" name="id" required>
-        <button type="submit">Get Content</button>
-    </form>
+                <label for="text">Your message</label>
+                <textarea id="text" name="text" required></textarea>
+
+                <label for="file">Choose file</label>
+                <input type="file" id="file" name="file" required>
+
+                <label for="openDate">Open Date</label>
+                <input type="datetime-local" id="openDate" name="openDate" required>
+
+                <button type="submit">Create Time Capsule</button>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h2>Get Countdown</h2>
+            <form id="get-countdown-form">
+                <label for="capsuleId">Enter Time Capsule ID</label>
+                <input type="text" id="capsuleId" name="capsuleId" required>
+                <button type="button" onclick="getCountdown()">Get Countdown</button>
+            </form>
+            <div id="countdown-result"></div>
+        </div>
+
+        <div class="form-section">
+            <h2>Get Content</h2>
+            <form id="get-content-form">
+                <label for="contentCapsuleId">Enter Time Capsule ID</label>
+                <input type="text" id="contentCapsuleId" name="contentCapsuleId" required>
+                <button type="button" onclick="getContent()">Get Content</button>
+            </form>
+            <div id="content-result"></div>
+        </div>
+    </div>
+
+    <script>
+        async function getCountdown() {
+            const capsuleId = document.getElementById('capsuleId').value;
+            const response = await fetch(`/api/countdown/${capsuleId}`);
+            const data = await response.json();
+            document.getElementById('countdown-result').innerText = data.message;
+        }
+
+        async function getContent() {
+            const capsuleId = document.getElementById('contentCapsuleId').value;
+            const response = await fetch(`/api/timecapsules/${capsuleId}`);
+            const data = await response.json();
+            if (data.imageUrl) {
+                document.getElementById('content-result').innerHTML = `<p>${data.text}</p><img src="${data.imageUrl}" alt="Image">`;
+            } else {
+                document.getElementById('content-result').innerText = data.message || 'Content not available yet';
+            }
+        }
+    </script>
 </body>
 </html>
