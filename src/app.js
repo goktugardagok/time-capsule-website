@@ -13,9 +13,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Connect to MongoDB
-const mongoUri = process.env.MONGO_URI;
+const mongoUri = process.env.MONGODB_URI;
 if (!mongoUri) {
-    throw new Error('MONGO_URI environment variable is not defined');
+    throw new Error('MONGODB_URI environment variable is not defined');
 }
 
 mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true })
