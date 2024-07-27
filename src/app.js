@@ -6,32 +6,38 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// MongoDB connection
-mongoose.set('strictQuery', false);
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-  .then(() => console.log('MongoDB connected'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+// Connect to MongoDB
+const mongoUri = process.env.MONGO_URI;
+if (!mongoUri) {
+    throw new Error('MONGO_URI environment variable is not defined');
+}
+
+mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('MongoDB connected'))
+    .catch(err => console.error('MongoDB connection error:', err));
 
 // Routes
-const timeCapsuleRoutes = require('./routes/timeCapsuleRoutes');
-app.use('/api', timeCapsuleRoutes);
+app.use('/api', require('./routes/timeCapsuleRoutes'));
 
+// Set up view engine
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+
+// Home route
 app.get('/', (req, res) => {
-  res.render('index');
+    res.render('index');
 });
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
+
+module.exports = app;

@@ -1,31 +1,22 @@
 const express = require('express');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const { createTimeCapsule, getCountdown, getContent } = require('../controllers/timeCapsuleController');
-
 const router = express.Router();
+const multer = require('multer');
+const { GridFsStorage } = require('multer-gridfs-storage');
+const timeCapsuleController = require('../controllers/timeCapsuleController');
 
-// Ensure the uploads directory exists
-const uploadsDir = path.join(__dirname, '../../uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
-// File storage setup
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
+const storage = new GridFsStorage({
+    url: process.env.MONGO_URI,
+    file: (req, file) => {
+        return {
+            filename: Date.now() + '-' + file.originalname
+        };
+    }
 });
-
 const upload = multer({ storage });
 
-router.post('/submit', upload.single('file'), createTimeCapsule);
-router.get('/countdown/:id', getCountdown);
-router.get('/content/:id', getContent);
+// Routes
+router.post('/submit', upload.single('file'), timeCapsuleController.createTimeCapsule);
+router.get('/countdown/:id', timeCapsuleController.getCountdown);
+router.get('/content/:id', timeCapsuleController.getContent);
 
 module.exports = router;
