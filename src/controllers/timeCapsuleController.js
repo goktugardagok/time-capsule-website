@@ -1,81 +1,65 @@
-const mongoose = require('mongoose');
-const Grid = require('gridfs-stream');
-const path = require('path');
 const TimeCapsule = require('../models/timeCapsuleModel');
 
-// Connect to MongoDB
-const mongoUri = process.env.MONGODB_URI;
-if (!mongoUri) {
-    throw new Error('MONGODB_URI environment variable is not defined');
-}
+const createTimeCapsule = async (req, res) => {
+    try {
+        const { userId, text, openDate } = req.body;
+        const imageUrl = `/uploads/${req.file.filename}`;
 
-const conn = mongoose.createConnection(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
+        const newTimeCapsule = new TimeCapsule({
+            userId,
+            text,
+            imageUrl,
+            openDate,
+            createdAt: new Date()
+        });
 
-let gfs;
-conn.once('open', () => {
-    gfs = Grid(conn.db, mongoose.mongo);
-    gfs.collection('uploads');
-});
-
-const createTimeCapsule = (req, res) => {
-    const { userId, text, openDate } = req.body;
-    const file = req.file;
-
-    // Save time capsule data to MongoDB
-    const timeCapsule = new TimeCapsule({
-        userId,
-        text,
-        imageUrl: file ? `/uploads/${file.filename}` : '',
-        openDate,
-    });
-
-    timeCapsule.save()
-        .then(() => res.status(201).json({ message: 'Time capsule created successfully' }))
-        .catch(err => res.status(500).json({ error: err.message }));
+        await newTimeCapsule.save();
+        res.status(201).json({ message: 'Time capsule created successfully' });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
 };
 
-const getTimeCapsule = (req, res) => {
-    const { id } = req.params;
+const getTimeCapsule = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const timeCapsule = await TimeCapsule.findById(id);
 
-    TimeCapsule.findById(id)
-        .then(timeCapsule => {
-            if (!timeCapsule) {
-                return res.status(404).json({ error: 'Time capsule not found' });
-            }
+        if (!timeCapsule) {
+            return res.status(404).json({ message: 'Time capsule not found' });
+        }
 
-            const currentDate = new Date();
-            const openDate = new Date(timeCapsule.openDate);
-
-            if (currentDate >= openDate) {
-                res.status(200).json(timeCapsule);
-            } else {
-                const timeLeft = openDate - currentDate;
-                res.status(200).json({ message: `Time left: ${timeLeft}` });
-            }
-        })
-        .catch(err => res.status(500).json({ error: err.message }));
+        res.status(200).json(timeCapsule);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
 };
 
-const getCountdown = (req, res) => {
-    const { id } = req.params;
+const getCountdown = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const timeCapsule = await TimeCapsule.findById(id);
 
-    TimeCapsule.findById(id)
-        .then(timeCapsule => {
-            if (!timeCapsule) {
-                return res.status(404).json({ error: 'Time capsule not found' });
-            }
+        if (!timeCapsule) {
+            return res.status(404).json({ message: 'Time capsule not found' });
+        }
 
-            const currentDate = new Date();
-            const openDate = new Date(timeCapsule.openDate);
+        const now = new Date();
+        const openDate = new Date(timeCapsule.openDate);
+        const countdown = openDate - now;
 
-            const timeLeft = openDate - currentDate;
-            res.status(200).json({ message: `Time left: ${timeLeft}` });
-        })
-        .catch(err => res.status(500).json({ error: err.message }));
+        if (countdown <= 0) {
+            res.status(200).json({ message: 'The time capsule can be opened now!' });
+        } else {
+            const days = Math.floor(countdown / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((countdown % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((countdown % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((countdown % (1000 * 60)) / 1000);
+            res.status(200).json({ message: `Time left: ${days}d ${hours}h ${minutes}m ${seconds}s` });
+        }
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
 };
 
-module.exports = {
-    createTimeCapsule,
-    getTimeCapsule,
-    getCountdown,
-};
+module.exports = { createTimeCapsule, getTimeCapsule, getCountdown };
