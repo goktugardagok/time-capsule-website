@@ -3,22 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Time Capsule API</title>
+  <title>Time Capsule</title>
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <h1>Welcome to the Time Capsule API</h1>
-  <form id="createForm" enctype="multipart/form-data">
+  <form id="createForm">
     <label for="userId">User ID:</label>
     <input type="text" id="userId" name="userId" required>
     <label for="text">Your message:</label>
     <input type="text" id="text" name="text" required>
-    <label for="file">Choose a file:</label>
+    <label for="file">Upload File:</label>
     <input type="file" id="file" name="file">
-    <label for="openDate">Choose a date:</label>
+    <label for="openDate">Open Date:</label>
     <input type="datetime-local" id="openDate" name="openDate" required>
     <button type="submit">Create Time Capsule</button>
   </form>
+
   <h2>Get Countdown</h2>
   <form id="countdownForm">
     <label for="countdownId">Enter Time Capsule ID:</label>
@@ -26,6 +27,7 @@
     <button type="submit">Get Countdown</button>
     <p id="countdownResult"></p>
   </form>
+
   <h2>Get Content</h2>
   <form id="contentForm">
     <label for="contentId">Enter Time Capsule ID:</label>
@@ -33,6 +35,7 @@
     <button type="submit">Get Content</button>
     <p id="contentResult"></p>
   </form>
+
   <script>
     document.getElementById('createForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -61,7 +64,7 @@
       if (result.message) {
         document.getElementById('contentResult').innerText = result.message;
       } else {
-        document.getElementById('contentResult').innerText = JSON.stringify(result, null, 2);
+        document.getElementById('contentResult').innerText = `User ID: ${result.userId}, Message: ${result.text}, Image: ${result.imageUrl}`;
       }
     });
   </script>
