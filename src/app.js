@@ -3,7 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
 
-const timeCapsuleRoutes = require('./src/routes/timeCapsuleRoutes');
+const timeCapsuleRoutes = require('./routes/timeCapsuleRoutes'); // Correct path
 
 const app = express();
 
@@ -17,10 +17,10 @@ mongoose.connect(process.env.MONGODB_URI, {
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'src/views'));
-app.use(express.static(path.join(__dirname, 'public')));
+app.set('views', path.join(__dirname, 'views'));
+app.use(express.static(path.join(__dirname, '../public')));
 
-app.use('/', timeCapsuleRoutes);
+app.use('/api', timeCapsuleRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
