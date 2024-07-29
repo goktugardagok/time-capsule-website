@@ -1,21 +1,30 @@
 const express = require('express');
 const multer = require('multer');
-const { createTimeCapsule, getTimeCapsule, getCountdown } = require('../controllers/timeCapsuleController');
+const path = require('path');
+const {
+    createTimeCapsule,
+    getCountdown,
+    getTimeCapsuleContent,
+    getFile,
+} = require('../controllers/timeCapsuleController');
+
 const router = express.Router();
 
+// Multer setup
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
+    destination: (req, file, cb) => {
         cb(null, 'uploads/');
     },
-    filename: function (req, file, cb) {
-        cb(null, file.originalname);
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname));
     },
 });
 
 const upload = multer({ storage });
 
 router.post('/submit', upload.single('file'), createTimeCapsule);
-router.get('/timecapsules/:id', getTimeCapsule);
 router.get('/countdown/:id', getCountdown);
+router.get('/content/:id', getTimeCapsuleContent);
+router.get('/file/:filename', getFile);
 
 module.exports = router;

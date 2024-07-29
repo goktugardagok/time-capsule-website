@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Time Capsule</title>
-    <link rel="stylesheet" href="/src/styles.css">
+    <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
     <div class="container">
@@ -12,18 +12,18 @@
 
         <div class="form-section">
             <h2>Create Time Capsule</h2>
-            <form id="create-time-capsule-form" action="/api/submit" method="POST" enctype="multipart/form-data">
+            <form action="/api/submit" method="POST" enctype="multipart/form-data">
                 <label for="userId">User ID</label>
                 <input type="text" id="userId" name="userId" required>
-
+                
                 <label for="text">Your message</label>
                 <textarea id="text" name="text" required></textarea>
 
                 <label for="file">Choose file</label>
-                <input type="file" id="file" name="file" required>
+                <input type="file" id="file" name="file">
 
                 <label for="openDate">Open Date</label>
-                <input type="datetime-local" id="openDate" name="openDate" required>
+                <input type="date" id="openDate" name="openDate" required>
 
                 <button type="submit">Create Time Capsule</button>
             </form>
@@ -31,9 +31,9 @@
 
         <div class="form-section">
             <h2>Get Countdown</h2>
-            <form id="get-countdown-form">
-                <label for="capsuleId">Enter Time Capsule ID</label>
-                <input type="text" id="capsuleId" name="capsuleId" required>
+            <form id="countdownForm">
+                <label for="countdownId">Enter Time Capsule ID</label>
+                <input type="text" id="countdownId" name="countdownId" required>
                 <button type="button" onclick="getCountdown()">Get Countdown</button>
             </form>
             <div id="countdown-result"></div>
@@ -41,9 +41,9 @@
 
         <div class="form-section">
             <h2>Get Content</h2>
-            <form id="get-content-form">
-                <label for="contentCapsuleId">Enter Time Capsule ID</label>
-                <input type="text" id="contentCapsuleId" name="contentCapsuleId" required>
+            <form id="contentForm">
+                <label for="contentId">Enter Time Capsule ID</label>
+                <input type="text" id="contentId" name="contentId" required>
                 <button type="button" onclick="getContent()">Get Content</button>
             </form>
             <div id="content-result"></div>
@@ -52,20 +52,20 @@
 
     <script>
         async function getCountdown() {
-            const capsuleId = document.getElementById('capsuleId').value;
-            const response = await fetch(`/api/countdown/${capsuleId}`);
+            const countdownId = document.getElementById('countdownId').value;
+            const response = await fetch(`/api/countdown/${countdownId}`);
             const data = await response.json();
-            document.getElementById('countdown-result').innerText = data.message;
+            document.getElementById('countdown-result').textContent = data.message;
         }
 
         async function getContent() {
-            const capsuleId = document.getElementById('contentCapsuleId').value;
-            const response = await fetch(`/api/timecapsules/${capsuleId}`);
+            const contentId = document.getElementById('contentId').value;
+            const response = await fetch(`/api/content/${contentId}`);
             const data = await response.json();
             if (data.imageUrl) {
-                document.getElementById('content-result').innerHTML = `<p>${data.text}</p><img src="${data.imageUrl}" alt="Image">`;
+                document.getElementById('content-result').innerHTML = `<p>${data.text}</p><img src="/api/file/${data.imageUrl}" alt="Image">`;
             } else {
-                document.getElementById('content-result').innerText = data.message || 'Content not available yet';
+                document.getElementById('content-result').innerHTML = `<p>${data.text}</p>`;
             }
         }
     </script>
