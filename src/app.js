@@ -1,10 +1,10 @@
 const express = require('express');
 const app = express();
-const timeCapsuleRoutes = require('./src/routes/timeCapsuleRoutes');
+const timeCapsuleRoutes = require('./routes/timeCapsuleRoutes');
 
 // Middleware setup
-app.use(express.json()); // For parsing JSON requests
-app.use(express.urlencoded({ extended: true })); // For parsing URL-encoded requests
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Static files (if needed)
 app.use('/uploads', express.static('uploads'));
