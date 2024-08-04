@@ -1,34 +1,50 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Time Capsule API</title>
-  <link rel="stylesheet" href="/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Capsule</title>
+    <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <h1>Welcome to the Time Capsule API</h1>
-  <section>
-    <h2>Create Time Capsule</h2>
-    <form action="/api/submit" method="POST" enctype="multipart/form-data">
-      <input type="text" name="userId" placeholder="User ID" required>
-      <input type="text" name="text" placeholder="Your message" required>
-      <input type="file" name="file" required>
-      <input type="datetime-local" name="openDate" required>
-      <button type="submit">Create Time Capsule</button>
-    </form>
-  </section>
-  <section>
-    <h2>Get Countdown</h2>
-    <form action="/api/countdown" method="GET">
-      <input type="text" name="id" placeholder="Enter Time Capsule ID" required>
-      <button type="submit">Get Countdown</button>
-    </form>
-  </section>
-  <section>
-    <h2>Get Content</h2>
-    <form action="/api/content" method="GET">
-      <input type="text" name="id" placeholder="Enter Time Capsule ID" required>
-      <button type="submit">Get Content</button>
-    </form>
-  </section>
+    <div class="container">
+        <h1>Welcome to the Time Capsule API</h1>
+
+        <section>
+            <h2>Create Time Capsule</h2>
+            <form id="timeCapsuleForm" action="/api/submit" method="POST" enctype="multipart/form-data">
+                <label for="userId">User ID</label>
+                <input type="text" id="userId" name="userId" required>
+                <label for="text">Your message</label>
+                <textarea id="text" name="text" required></textarea>
+                <label for="file">Choose file</label>
+                <input type="file" id="file" name="file">
+                <label for="openDate">Open Date</label>
+                <input type="datetime-local" id="openDate" name="openDate" required>
+                <button type="submit">Create Time Capsule</button>
+            </form>
+        </section>
+
+        <section>
+            <h2>Get Countdown</h2>
+            <form id="countdownForm">
+                <label for="countdownId">Enter Time Capsule ID</label>
+                <input type="text" id="countdownId" name="countdownId" required>
+                <button type="button" id="countdownButton">Get Countdown</button>
+            </form>
+            <div id="countdownResult"></div>
+        </section>
+
+        <section>
+            <h2>Get Content</h2>
+            <form id="contentForm">
+                <label for="contentId">Enter Time Capsule ID</label>
+                <input type="text" id="contentId" name="contentId" required>
+                <button type="button" id="contentButton">Get Content</button>
+            </form>
+            <div id="contentResult"></div>
+        </section>
+    </div>
+    <script src="/scripts.js"></script>
 </body>
 </html>
