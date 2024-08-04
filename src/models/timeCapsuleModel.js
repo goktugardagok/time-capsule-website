@@ -3,24 +3,27 @@ const mongoose = require('mongoose');
 const timeCapsuleSchema = new mongoose.Schema({
     userId: {
         type: String,
-        required: true,
+        required: true
     },
     text: {
         type: String,
-        required: true,
+        required: true
     },
     imageUrl: {
         type: String,
-        required: true,
+        required: false
     },
     openDate: {
         type: Date,
-        required: true,
+        required: true
     },
     createdAt: {
         type: Date,
-        default: Date.now,
-    },
+        required: true,
+        default: Date.now
+    }
 });
 
-module.exports = mongoose.model('TimeCapsule', timeCapsuleSchema);
+const TimeCapsule = mongoose.model('TimeCapsule', timeCapsuleSchema);
+
+module.exports = TimeCapsule;

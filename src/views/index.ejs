@@ -9,65 +9,68 @@
 <body>
     <div class="container">
         <h1>Welcome to the Time Capsule API</h1>
-
-        <div class="form-section">
+        
+        <section>
             <h2>Create Time Capsule</h2>
-            <form action="/api/submit" method="POST" enctype="multipart/form-data">
-                <label for="userId">User ID</label>
-                <input type="text" id="userId" name="userId" required>
-                
-                <label for="text">Your message</label>
-                <textarea id="text" name="text" required></textarea>
-
-                <label for="file">Choose file</label>
-                <input type="file" id="file" name="file">
-
-                <label for="openDate">Open Date</label>
-                <input type="date" id="openDate" name="openDate" required>
-
+            <form id="createForm">
+                <input type="text" name="userId" placeholder="User ID" required>
+                <textarea name="text" placeholder="Your message" required></textarea>
+                <input type="file" name="file">
+                <input type="datetime-local" name="openDate" required>
                 <button type="submit">Create Time Capsule</button>
             </form>
-        </div>
-
-        <div class="form-section">
+        </section>
+        
+        <section>
             <h2>Get Countdown</h2>
             <form id="countdownForm">
-                <label for="countdownId">Enter Time Capsule ID</label>
-                <input type="text" id="countdownId" name="countdownId" required>
-                <button type="button" onclick="getCountdown()">Get Countdown</button>
+                <input type="text" name="id" placeholder="Enter Time Capsule ID" required>
+                <button type="submit">Get Countdown</button>
             </form>
-            <div id="countdown-result"></div>
-        </div>
-
-        <div class="form-section">
+            <div id="countdownResult"></div>
+        </section>
+        
+        <section>
             <h2>Get Content</h2>
             <form id="contentForm">
-                <label for="contentId">Enter Time Capsule ID</label>
-                <input type="text" id="contentId" name="contentId" required>
-                <button type="button" onclick="getContent()">Get Content</button>
+                <input type="text" name="id" placeholder="Enter Time Capsule ID" required>
+                <button type="submit">Get Content</button>
             </form>
-            <div id="content-result"></div>
-        </div>
+            <div id="contentResult"></div>
+        </section>
     </div>
 
     <script>
-        async function getCountdown() {
-            const countdownId = document.getElementById('countdownId').value;
-            const response = await fetch(`/api/countdown/${countdownId}`);
-            const data = await response.json();
-            document.getElementById('countdown-result').textContent = data.message;
-        }
+        document.getElementById('createForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const response = await fetch('/api/submit', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            alert(result.message || result.error);
+        });
 
-        async function getContent() {
-            const contentId = document.getElementById('contentId').value;
-            const response = await fetch(`/api/content/${contentId}`);
-            const data = await response.json();
-            if (data.imageUrl) {
-                document.getElementById('content-result').innerHTML = `<p>${data.text}</p><img src="/api/file/${data.imageUrl}" alt="Image">`;
-            } else {
-                document.getElementById('content-result').innerHTML = `<p>${data.text}</p>`;
+        document.getElementById('countdownForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const id = this.id.value;
+            const response = await fetch(`/api/countdown?id=${id}`);
+            const result = await response.json();
+            document.getElementById('countdownResult').textContent = `Time left: ${result.timeLeft} ms`;
+        });
+
+        document.getElementById('contentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const id = this.id.value;
+            const response = await fetch(`/api/content?id=${id}`);
+            const result = await response.json();
+            if (result.error) {
+                alert(result.error);
+                return;
             }
-        }
+            document.getElementById('contentResult').innerHTML = `<p>${result.text}</p><img src="${result.imageUrl}" alt="Image">`;
+        });
     </script>
 </body>
 </html>
