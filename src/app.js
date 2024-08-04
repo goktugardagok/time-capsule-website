@@ -1,28 +1,29 @@
-require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');
-const path = require('path');
-
-const timeCapsuleRoutes = require('./routes/timeCapsuleRoutes'); // Correct path
-
 const app = express();
+const timeCapsuleRoutes = require('./src/routes/timeCapsuleRoutes');
 
-mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.error('MongoDB connection error:', err));
+// Middleware setup
+app.use(express.json()); // For parsing JSON requests
+app.use(express.urlencoded({ extended: true })); // For parsing URL-encoded requests
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-app.use(express.static(path.join(__dirname, '../public')));
+// Static files (if needed)
+app.use('/uploads', express.static('uploads'));
 
+// Routes
 app.use('/api', timeCapsuleRoutes);
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Default route for testing
+app.get('/', (req, res) => {
+    res.send('Welcome to the Time Capsule API');
+});
 
-module.exports = app;
+// Error handling middleware (optional)
+app.use((req, res, next) => {
+    res.status(404).send("Sorry, that route doesn't exist.");
+});
+
+// Start the server (ensure the port is correctly set)
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+});
