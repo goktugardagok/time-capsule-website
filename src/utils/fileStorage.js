@@ -1,16 +1,12 @@
-const { GridFsStorage } = require('multer-gridfs-storage');
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-
-dotenv.config();
-
-const mongoURI = process.env.MONGODB_URI;
+const GridFsStorage = require('multer-gridfs-storage');
+const multer = require('multer');
 
 const storage = new GridFsStorage({
-    url: mongoURI,
+    url: process.env.MONGODB_URI,
+    options: { useNewUrlParser: true, useUnifiedTopology: true },
     file: (req, file) => {
         return {
-            filename: Date.now() + path.extname(file.originalname),
+            filename: `${Date.now()}-${file.originalname}`,
             bucketName: 'uploads'
         };
     }
@@ -18,4 +14,4 @@ const storage = new GridFsStorage({
 
 const upload = multer({ storage });
 
-module.exports = upload;
+module.exports = { upload };
